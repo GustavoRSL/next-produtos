@@ -35,8 +35,8 @@ export function Header({ title, onToggleSidebar }: HeaderProps) {
             {onToggleSidebar && (
               <Button
                 isIconOnly
-                variant="ghost"
                 className="lg:hidden mr-2"
+                variant="ghost"
                 onClick={onToggleSidebar}
               >
                 <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -49,10 +49,10 @@ export function Header({ title, onToggleSidebar }: HeaderProps) {
 
           <div className="flex items-center space-x-2 sm:space-x-4">
             <ThemeSwitch />
-            <Button isIconOnly variant="ghost" className="hidden sm:flex">
+            <Button isIconOnly className="hidden sm:flex" variant="ghost">
               <BellIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </Button>
-            <Button isIconOnly variant="ghost" className="hidden md:flex">
+            <Button isIconOnly className="hidden md:flex" variant="ghost">
               <Cog6ToothIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </Button>
             <div className="hidden md:flex items-center space-x-2">

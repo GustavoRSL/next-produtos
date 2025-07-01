@@ -32,23 +32,23 @@ export default function DashboardPage() {
   // Detectar tamanho da tela quando o componente montar (apenas no navegador)
   useEffect(() => {
     if (!isBrowser) return;
-    
+
     const handleResize = () => {
       const isMobileView = window.innerWidth < 640;
-      
+
       setChartSize({
         donutSize: isMobileView ? 100 : 120,
         donutSizeLarge: isMobileView ? 140 : 160,
         isMobile: isMobileView,
       });
     };
-    
+
     // Inicializar
     handleResize();
-    
+
     // Adicionar listener para redimensionamento
     window.addEventListener("resize", handleResize);
-    
+
     // Cleanup
     return () => window.removeEventListener("resize", handleResize);
   }, [isBrowser]);
@@ -270,9 +270,15 @@ export default function DashboardPage() {
               <table className="min-w-full">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Categoria</th>
-                    <th className="py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Produtos</th>
-                    <th className="py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Em Estoque</th>
+                    <th className="py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Categoria
+                    </th>
+                    <th className="py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Produtos
+                    </th>
+                    <th className="py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Em Estoque
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -280,17 +286,23 @@ export default function DashboardPage() {
                     <td className="py-2">
                       <div className="flex items-center">
                         <div className="w-3 h-3 bg-cyan-500 rounded-full mr-2" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Eletrônicos</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Eletrônicos
+                        </span>
                       </div>
                     </td>
                     <td className="py-2 text-right text-sm font-medium">245</td>
-                    <td className="py-2 text-right text-sm font-medium">1.450</td>
+                    <td className="py-2 text-right text-sm font-medium">
+                      1.450
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-2">
                       <div className="flex items-center">
                         <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Roupas</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Roupas
+                        </span>
                       </div>
                     </td>
                     <td className="py-2 text-right text-sm font-medium">132</td>
@@ -300,7 +312,9 @@ export default function DashboardPage() {
                     <td className="py-2">
                       <div className="flex items-center">
                         <div className="w-3 h-3 bg-amber-500 rounded-full mr-2" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Casa</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Casa
+                        </span>
                       </div>
                     </td>
                     <td className="py-2 text-right text-sm font-medium">89</td>
@@ -310,7 +324,9 @@ export default function DashboardPage() {
                     <td className="py-2">
                       <div className="flex items-center">
                         <div className="w-3 h-3 bg-red-500 rounded-full mr-2" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Esporte</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Esporte
+                        </span>
                       </div>
                     </td>
                     <td className="py-2 text-right text-sm font-medium">67</td>
@@ -320,7 +336,9 @@ export default function DashboardPage() {
                     <td className="py-2">
                       <div className="flex items-center">
                         <div className="w-3 h-3 bg-purple-500 rounded-full mr-2" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Livros</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Livros
+                        </span>
                       </div>
                     </td>
                     <td className="py-2 text-right text-sm font-medium">43</td>
@@ -371,7 +389,10 @@ export default function DashboardPage() {
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">
               Vendas e Devoluções por Trimestre
             </h3>
-            <BarChart data={vendasTrimestralData} height={chartSize.isMobile ? 200 : 250} />
+            <BarChart
+              data={vendasTrimestralData}
+              height={chartSize.isMobile ? 200 : 250}
+            />
             <div className="flex flex-wrap justify-center mt-4 space-x-0 sm:space-x-4 gap-y-2 gap-x-4">
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-cyan-500 rounded-full mr-2" />
@@ -439,8 +460,12 @@ export default function DashboardPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-2 text-right text-sm font-medium">1.450</td>
-                    <td className="py-2 text-right text-sm font-medium">72,2%</td>
+                    <td className="py-2 text-right text-sm font-medium">
+                      1.450
+                    </td>
+                    <td className="py-2 text-right text-sm font-medium">
+                      72,2%
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-2">
@@ -452,7 +477,9 @@ export default function DashboardPage() {
                       </div>
                     </td>
                     <td className="py-2 text-right text-sm font-medium">234</td>
-                    <td className="py-2 text-right text-sm font-medium">11,7%</td>
+                    <td className="py-2 text-right text-sm font-medium">
+                      11,7%
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-2">
@@ -464,7 +491,9 @@ export default function DashboardPage() {
                       </div>
                     </td>
                     <td className="py-2 text-right text-sm font-medium">323</td>
-                    <td className="py-2 text-right text-sm font-medium">16,1%</td>
+                    <td className="py-2 text-right text-sm font-medium">
+                      16,1%
+                    </td>
                   </tr>
                 </tbody>
               </table>

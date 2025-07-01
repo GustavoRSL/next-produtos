@@ -34,6 +34,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
     };
 
     window.addEventListener("resize", handleResize);
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -54,7 +55,9 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="lg:ml-64 h-screen flex flex-col transition-all duration-300 ease-in-out">
         <Header title={title} onToggleSidebar={toggleSidebar} />
-        <div className="py-4 px-3 sm:px-5 overflow-y-auto flex-1">{children}</div>
+        <div className="py-4 px-3 sm:px-5 overflow-y-auto flex-1">
+          {children}
+        </div>
       </div>
     </div>
   );

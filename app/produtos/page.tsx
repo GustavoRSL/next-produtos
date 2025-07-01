@@ -363,10 +363,10 @@ export default function ProdutosPage() {
           </p>
         </div>
         <Button
+          className="w-full sm:w-auto"
           color="primary"
           startContent={<PlusIcon className="w-4 h-4" />}
           onPress={() => handleOpenModal("create")}
-          className="w-full sm:w-auto"
         >
           Novo Produto
         </Button>
@@ -378,6 +378,7 @@ export default function ProdutosPage() {
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
             <div className="w-full md:flex-1">
               <Input
+                fullWidth
                 isClearable
                 endContent={
                   <Button
@@ -404,10 +405,10 @@ export default function ProdutosPage() {
                     handleSearch();
                   }
                 }}
-                fullWidth
               />
             </div>
             <Button
+              className="w-full md:w-auto"
               size="lg"
               variant="flat"
               onPress={() => {
@@ -415,7 +416,6 @@ export default function ProdutosPage() {
                 setSearchTerm("");
                 setCurrentPage(1);
               }}
-              className="w-full md:w-auto"
             >
               Limpar Filtros
             </Button>
@@ -481,17 +481,23 @@ export default function ProdutosPage() {
         <CardBody className="p-0">
           <div className="overflow-x-auto">
             <Table
+              removeWrapper
               aria-label="Tabela de produtos"
               classNames={{
                 wrapper: "min-h-[400px]",
               }}
-              removeWrapper
             >
               <TableHeader>
                 <TableColumn>PRODUTO</TableColumn>
-                <TableColumn className="hidden md:table-cell">THUMBNAIL</TableColumn>
-                <TableColumn className="hidden md:table-cell">STATUS</TableColumn>
-                <TableColumn className="hidden lg:table-cell">CRIADO EM</TableColumn>
+                <TableColumn className="hidden md:table-cell">
+                  THUMBNAIL
+                </TableColumn>
+                <TableColumn className="hidden md:table-cell">
+                  STATUS
+                </TableColumn>
+                <TableColumn className="hidden lg:table-cell">
+                  CRIADO EM
+                </TableColumn>
                 <TableColumn className="w-[100px]">AÇÕES</TableColumn>
               </TableHeader>
               <TableBody emptyContent="Nenhum produto encontrado">
@@ -502,7 +508,9 @@ export default function ProdutosPage() {
                         <div className="flex items-center gap-2 justify-between sm:justify-start">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-medium text-sm sm:text-base">{product.title}</p>
+                              <p className="font-medium text-sm sm:text-base">
+                                {product.title}
+                              </p>
                               <div className="sm:hidden">
                                 <Chip
                                   color={product.status ? "success" : "danger"}
@@ -536,7 +544,9 @@ export default function ProdutosPage() {
                         </div>
                         {/* Data para mobile */}
                         <div className="md:hidden flex items-center">
-                          <p className="text-xs text-gray-500">{formatDate(product.createdAt)}</p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(product.createdAt)}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
@@ -576,33 +586,35 @@ export default function ProdutosPage() {
                         {product.status ? "Ativo" : "Inativo"}
                       </Chip>
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell">{formatDate(product.createdAt)}</TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {formatDate(product.createdAt)}
+                    </TableCell>
                     <TableCell className="w-[100px] p-0 pr-2">
                       <div className="flex flex-wrap gap-0.5 sm:gap-1 justify-end">
                         <Button
                           isIconOnly
-                          size="sm"
                           className="min-w-0 w-6 h-6 sm:w-7 sm:h-7 bg-blue-100 dark:bg-blue-900 text-blue-600"
-                          onPress={() => handleOpenModal("view", product)}
+                          size="sm"
                           title="Ver detalhes"
+                          onPress={() => handleOpenModal("view", product)}
                         >
                           <EyeIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </Button>
                         <Button
                           isIconOnly
-                          size="sm"
                           className="min-w-0 w-6 h-6 sm:w-7 sm:h-7 bg-amber-100 dark:bg-amber-900 text-amber-600"
-                          onPress={() => handleOpenModal("edit", product)}
+                          size="sm"
                           title="Editar produto"
+                          onPress={() => handleOpenModal("edit", product)}
                         >
                           <PencilIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </Button>
                         <Button
                           isIconOnly
-                          size="sm"
                           className="min-w-0 w-6 h-6 sm:w-7 sm:h-7 bg-red-100 dark:bg-red-900 text-red-600"
-                          onPress={() => handleDeleteProduct(product.id)}
+                          size="sm"
                           title="Excluir produto"
+                          onPress={() => handleDeleteProduct(product.id)}
                         >
                           <TrashIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </Button>
@@ -622,17 +634,17 @@ export default function ProdutosPage() {
           <Pagination
             showControls
             showShadow
-            color="primary"
-            page={currentPage}
-            size="sm"
             className="sm:scale-110"
-            total={pagination.totalPages}
-            onChange={(page) => setCurrentPage(page)}
             classNames={{
               wrapper: "gap-0 xs:gap-1 sm:gap-2",
               item: "w-8 h-8 sm:w-10 sm:h-10",
               cursor: "bg-primary text-white font-semibold",
             }}
+            color="primary"
+            page={currentPage}
+            size="sm"
+            total={pagination.totalPages}
+            onChange={(page) => setCurrentPage(page)}
           />
         </div>
       )}
