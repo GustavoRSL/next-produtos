@@ -373,7 +373,7 @@ export default function ProdutosPage() {
       {/* Filtros */}
       <Card className="mb-6">
         <CardBody className="p-4">
-          <div className="flex gap-4 items-end">
+          <div className="flex gap-4 items-center">
             <div className="flex-1">
               <Input
                 isClearable
@@ -389,6 +389,7 @@ export default function ProdutosPage() {
                 }
                 label="Buscar por nome"
                 placeholder="Digite o nome do produto..."
+                size="lg"
                 value={nameFilter}
                 onChange={(e) => setNameFilter(e.target.value)}
                 onClear={() => {
@@ -404,6 +405,7 @@ export default function ProdutosPage() {
               />
             </div>
             <Button
+              size="lg"
               variant="flat"
               onPress={() => {
                 setNameFilter("");
