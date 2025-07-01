@@ -33,7 +33,7 @@ interface ProductState {
   deleteProduct: (id: string) => Promise<void>;
   updateProductThumbnail: (
     id: string,
-    thumbnail: string,
+    thumbnailFile: File,
   ) => Promise<ApiSuccessResponse>;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -147,12 +147,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  updateProductThumbnail: async (id: string, thumbnail: string) => {
+  updateProductThumbnail: async (id: string, thumbnailFile: File) => {
     try {
       set({ isLoading: true, error: null });
       const response = await productService.updateProductThumbnail(
         id,
-        thumbnail,
+        thumbnailFile,
       );
 
       // Recarregar produto atual se for o mesmo ID

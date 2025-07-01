@@ -105,11 +105,16 @@ export const productService = {
   // PATCH /products/thumbnail/{id} - Atualizar thumbnail do produto
   async updateProductThumbnail(
     id: string,
-    thumbnail: string,
+    thumbnailFile: File,
   ): Promise<ApiSuccessResponse> {
-    return httpClient.patch<ApiSuccessResponse>(`/products/thumbnail/${id}`, {
-      thumbnail,
-    });
+    const formData = new FormData();
+
+    formData.append("thumbnail", thumbnailFile);
+
+    return httpClient.uploadPatch<ApiSuccessResponse>(
+      `/products/thumbnail/${id}`,
+      formData,
+    );
   },
 };
 

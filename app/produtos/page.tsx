@@ -45,6 +45,7 @@ export default function ProdutosPage() {
     createProduct,
     updateProduct,
     deleteProduct,
+    updateProductThumbnail,
     clearError,
   } = useProductStore();
 
@@ -94,6 +95,9 @@ export default function ProdutosPage() {
         description: product.description,
         status: product.status,
       });
+      // Limpar seleção de nova imagem para edição
+      setThumbnailFile(null);
+      setImagePreview(null);
     }
 
     onOpen();
@@ -210,6 +214,23 @@ export default function ProdutosPage() {
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
 
     return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
+  };
+
+  const handleUpdateProductThumbnail = async () => {
+    if (!selectedProduct || !thumbnailFile) return;
+
+    try {
+      await updateProductThumbnail(selectedProduct.id, thumbnailFile);
+      
+      // Recarregar produtos para mostrar a nova thumbnail
+      await fetchProducts();
+      
+      // Limpar seleção de arquivo
+      setThumbnailFile(null);
+      setImagePreview(null);
+    } catch {
+      // Error handled by store
+    }
   };
 
   return (
@@ -414,14 +435,93 @@ export default function ProdutosPage() {
                 }
               />
               {modalMode === "edit" && (
-                <Switch
-                  isSelected={formData.status}
-                  onValueChange={(isSelected) =>
-                    setFormData({ ...formData, status: isSelected })
-                  }
-                >
-                  Produto Ativo
-                </Switch>
+                <>
+                  <Switch
+                    isSelected={formData.status}
+                    onValueChange={(isSelected) =>
+                      setFormData({ ...formData, status: isSelected })
+                    }
+                  >
+                    Produto Ativo
+                  </Switch>
+                  
+                  <div className="space-y-2">
+                    <p className="block text-sm font-medium text-gray-700">
+                      Atualizar Thumbnail
+                    </p>
+                    <div
+                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                        isDragOver
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-300"
+                      }`}
+                      onDragLeave={handleDragLeave}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                    >
+                      {imagePreview ? (
+                        <div className="space-y-2">
+                          <div className="relative inline-block">
+                            <Image
+                              alt="Preview"
+                              className="max-w-32 max-h-32 object-cover rounded-lg"
+                              height={128}
+                              src={imagePreview}
+                              width={128}
+                            />
+                            <button
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
+                              type="button"
+                              onClick={removeSelectedFile}
+                            >
+                              ×
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-600">
+                            {thumbnailFile?.name}
+                          </p>
+                          <Button
+                            color="primary"
+                            isLoading={isLoading}
+                            size="sm"
+                            onPress={handleUpdateProductThumbnail}
+                          >
+                            Atualizar Thumbnail
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <PhotoIcon className="mx-auto h-8 w-8 text-gray-400" />
+                          <p className="mt-1 text-xs text-gray-600">
+                            Nova imagem (opcional)
+                          </p>
+                          <input
+                            accept="image/*"
+                            className="hidden"
+                            id="thumbnail-upload-edit"
+                            type="file"
+                            onChange={handleFileChange}
+                          />
+                          <label
+                            className="cursor-pointer inline-block mt-1 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                            htmlFor="thumbnail-upload-edit"
+                          >
+                            Selecionar
+                          </label>
+                        </>
+                      )}
+                    </div>
+                    
+                    {selectedProduct?.thumbnail && (
+                      <div className="text-xs text-gray-500">
+                        <p>
+                          Thumbnail atual:{" "}
+                          {selectedProduct.thumbnail.originalName}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
               {modalMode === "view" && (
                 <div className="space-y-2">

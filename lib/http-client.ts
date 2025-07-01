@@ -176,6 +176,51 @@ class HttpClient {
     }
   }
 
+  // Upload de arquivos com PATCH
+  public async uploadPatch<T>(
+    endpoint: string,
+    formData: FormData,
+  ): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    const token = this.getAuthToken();
+    const headers: Record<string, string> = {};
+
+    // Adicionar token de autenticação se existir
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    // NÃO definir Content-Type para FormData - o browser define automaticamente
+    const config: RequestInit = {
+      method: "PATCH",
+      body: formData,
+      headers,
+    };
+
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({
+          message: response.statusText,
+        }));
+
+        throw new Error(error.message || `HTTP Error: ${response.status}`);
+      }
+
+      // Verificar se a resposta tem conteúdo
+      const contentType = response.headers.get("content-type");
+
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      }
+
+      return response.text() as unknown as T;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   private isAuthenticationRoute(endpoint: string): boolean {
     // Lista de rotas que não precisam de autenticação
     const authRoutes = [
