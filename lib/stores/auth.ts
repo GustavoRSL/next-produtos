@@ -50,12 +50,11 @@ export const useAuthStore = create<AuthState>()(
       register: async (data: RegisterData) => {
         try {
           set({ isLoading: true });
-          const response = await auth.register(data);
+          await auth.register(data);
 
+          // Não fazer login automático após registro
+          // O usuário deve fazer login manualmente
           set({
-            user: response.user,
-            token: response.token,
-            isAuthenticated: true,
             isLoading: false,
           });
         } catch (error) {

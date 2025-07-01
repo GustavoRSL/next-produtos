@@ -77,8 +77,12 @@ export default function AuthPage() {
   const onSignupSubmit = async (data: RegisterFormData) => {
     try {
       await registerUser(data);
-      toast.success("Cadastro realizado com sucesso!");
-      router.push("/dashboard");
+      toast.success(
+        "Cadastro realizado com sucesso! Faça login para continuar.",
+      );
+      // Redirecionar para o modo login após registro bem-sucedido
+      setIsLoginMode(true);
+      resetSignup();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Erro ao criar conta";
@@ -302,14 +306,25 @@ export default function AuthPage() {
                   variant="bordered"
                 />
 
-                <div className="flex items-center gap-2 text-sm text-default-500">
-                  <input className="rounded" type="checkbox" />
-                  <span>
-                    Aceito a{" "}
-                    <Link href="#" size="sm">
-                      Política de Privacidade
-                    </Link>
-                  </span>
+                <div className="flex items-start gap-2 text-sm">
+                  <input
+                    {...registerSignup("acceptTerms")}
+                    className="rounded mt-0.5"
+                    type="checkbox"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-default-700">
+                      Aceito a{" "}
+                      <Link href="#" size="sm">
+                        Política de Privacidade
+                      </Link>
+                    </span>
+                    {signupErrors.acceptTerms && (
+                      <span className="text-danger text-xs mt-1">
+                        {signupErrors.acceptTerms.message}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <Button
