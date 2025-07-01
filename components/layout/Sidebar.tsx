@@ -6,6 +6,8 @@ import { ChartBarIcon, CubeIcon } from "@heroicons/react/24/outline";
 
 interface SidebarProps {
   className?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const navigation = [
@@ -21,13 +23,26 @@ const navigation = [
   },
 ];
 
-export function Sidebar({ className = "" }: SidebarProps) {
+export function Sidebar({ className = "", isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div
-      className={`fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-xl border-r border-gray-200 dark:border-gray-700 z-50 ${className}`}
-    >
+    <>
+      {/* Overlay para fechamento em telas pequenas */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div
+        className={`fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-xl border-r border-gray-200 dark:border-gray-700 z-50 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        } ${className}`}
+      >
       <div className="p-6">
         <div className="flex items-center mb-8">
           <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
@@ -68,5 +83,6 @@ export function Sidebar({ className = "" }: SidebarProps) {
         </nav>
       </div>
     </div>
+    </>
   );
 }

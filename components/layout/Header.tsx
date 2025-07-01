@@ -6,6 +6,7 @@ import {
   Cog6ToothIcon,
   UserIcon,
   ArrowRightOnRectangleIcon,
+  Bars3Icon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 
@@ -14,9 +15,10 @@ import { ThemeSwitch } from "@/components/theme-switch";
 
 interface HeaderProps {
   title: string;
+  onToggleSidebar?: () => void;
 }
 
-export function Header({ title }: HeaderProps) {
+export function Header({ title, onToggleSidebar }: HeaderProps) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
 
@@ -27,25 +29,35 @@ export function Header({ title }: HeaderProps) {
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-      <div className="px-6 py-3">
+      <div className="px-4 sm:px-6 py-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            {onToggleSidebar && (
+              <Button
+                isIconOnly
+                variant="ghost"
+                className="lg:hidden mr-2"
+                onClick={onToggleSidebar}
+              >
+                <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </Button>
+            )}
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
               {title}
             </h1>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <ThemeSwitch />
-            <Button isIconOnly variant="ghost">
+            <Button isIconOnly variant="ghost" className="hidden sm:flex">
               <BellIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </Button>
-            <Button isIconOnly variant="ghost">
+            <Button isIconOnly variant="ghost" className="hidden md:flex">
               <Cog6ToothIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </Button>
-            <div className="flex items-center space-x-2">
+            <div className="hidden md:flex items-center space-x-2">
               <UserIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              <span className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[100px] md:max-w-none">
                 {user?.name}
               </span>
             </div>

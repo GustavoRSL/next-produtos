@@ -352,7 +352,7 @@ export default function ProdutosPage() {
       )}
 
       {/* Header Actions */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Gerenciar Produtos
@@ -365,6 +365,7 @@ export default function ProdutosPage() {
           color="primary"
           startContent={<PlusIcon className="w-4 h-4" />}
           onPress={() => handleOpenModal("create")}
+          className="w-full sm:w-auto"
         >
           Novo Produto
         </Button>
@@ -373,8 +374,8 @@ export default function ProdutosPage() {
       {/* Filtros */}
       <Card className="mb-6">
         <CardBody className="p-4">
-          <div className="flex gap-4 items-center">
-            <div className="flex-1">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+            <div className="w-full md:flex-1">
               <Input
                 isClearable
                 endContent={
@@ -402,6 +403,7 @@ export default function ProdutosPage() {
                     handleSearch();
                   }
                 }}
+                fullWidth
               />
             </div>
             <Button
@@ -412,6 +414,7 @@ export default function ProdutosPage() {
                 setSearchTerm("");
                 setCurrentPage(1);
               }}
+              className="w-full md:w-auto"
             >
               Limpar Filtros
             </Button>
@@ -420,136 +423,150 @@ export default function ProdutosPage() {
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mb-6">
         <Card>
-          <CardBody className="p-3">
+          <CardBody className="p-2 sm:p-3">
             <div className="text-center">
-              <p className="text-xl font-bold text-blue-600">
+              <p className="text-lg sm:text-xl font-bold text-blue-600">
                 {products.length}
               </p>
-              <p className="text-sm text-gray-600">Total de Produtos</p>
+              <p className="text-xs sm:text-sm text-gray-600">Total de Produtos</p>
             </div>
           </CardBody>
         </Card>
         <Card>
-          <CardBody className="p-3">
+          <CardBody className="p-2 sm:p-3">
             <div className="text-center">
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-lg sm:text-xl font-bold text-green-600">
                 {products.filter((p: Product) => p.status === true).length}
               </p>
-              <p className="text-sm text-gray-600">Produtos Ativos</p>
+              <p className="text-xs sm:text-sm text-gray-600">Produtos Ativos</p>
             </div>
           </CardBody>
         </Card>
-        <Card>
-          <CardBody className="p-3">
+        <Card className="col-span-2 md:col-span-1">
+          <CardBody className="p-2 sm:p-3">
             <div className="text-center">
-              <p className="text-xl font-bold text-red-600">
+              <p className="text-lg sm:text-xl font-bold text-red-600">
                 {products.filter((p: Product) => p.status === false).length}
               </p>
-              <p className="text-sm text-gray-600">Produtos Inativos</p>
+              <p className="text-xs sm:text-sm text-gray-600">Produtos Inativos</p>
             </div>
           </CardBody>
         </Card>
       </div>
 
       {/* Products Table */}
-      <Card className="mb-6">
+      <Card className="mb-6 overflow-hidden">
         <CardBody className="p-0">
-          <Table
-            aria-label="Tabela de produtos"
-            classNames={{
-              wrapper: "min-h-[400px]",
-            }}
-          >
-            <TableHeader>
-              <TableColumn>PRODUTO</TableColumn>
-              <TableColumn>THUMBNAIL</TableColumn>
-              <TableColumn>STATUS</TableColumn>
-              <TableColumn>CRIADO EM</TableColumn>
-              <TableColumn>AÇÕES</TableColumn>
-            </TableHeader>
-            <TableBody emptyContent="Nenhum produto encontrado">
-              {products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{product.title}</p>
-                      <p className="text-sm text-gray-500 max-w-xs truncate">
-                        {product.description}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                        {product.thumbnail?.url ? (
-                          <Image
-                            alt={product.thumbnail.originalName}
-                            className="w-full h-full object-cover"
-                            height={48}
-                            src={product.thumbnail.url}
-                            width={48}
-                          />
-                        ) : (
-                          <PhotoIcon className="w-6 h-6 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="text-sm">
-                        <p className="text-gray-600">
-                          {product.thumbnail?.originalName || "Sem imagem"}
+          <div className="overflow-x-auto">
+            <Table
+              aria-label="Tabela de produtos"
+              classNames={{
+                wrapper: "min-h-[400px]",
+              }}
+              removeWrapper
+            >
+              <TableHeader>
+                <TableColumn>PRODUTO</TableColumn>
+                <TableColumn className="hidden sm:table-cell">THUMBNAIL</TableColumn>
+                <TableColumn className="hidden md:table-cell">STATUS</TableColumn>
+                <TableColumn className="hidden lg:table-cell">CRIADO EM</TableColumn>
+                <TableColumn>AÇÕES</TableColumn>
+              </TableHeader>
+              <TableBody emptyContent="Nenhum produto encontrado">
+                {products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{product.title}</p>
+                        <p className="text-sm text-gray-500 max-w-[150px] sm:max-w-xs truncate">
+                          {product.description}
                         </p>
-                        <p className="text-gray-400">
-                          {product.thumbnail?.size
-                            ? formatFileSize(product.thumbnail.size)
-                            : ""}
-                        </p>
+                        {/* Status e data para mobile */}
+                        <div className="block sm:hidden mt-2 space-y-1">
+                          <Chip
+                            color={product.status ? "success" : "danger"}
+                            size="sm"
+                            variant="flat"
+                          >
+                            {product.status ? "Ativo" : "Inativo"}
+                          </Chip>
+                          <p className="text-xs text-gray-500">{formatDate(product.createdAt)}</p>
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      color={product.status ? "success" : "danger"}
-                      size="sm"
-                      variant="flat"
-                    >
-                      {product.status ? "Ativo" : "Inativo"}
-                    </Chip>
-                  </TableCell>
-                  <TableCell>{formatDate(product.createdAt)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        isIconOnly
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                          {product.thumbnail?.url ? (
+                            <Image
+                              alt={product.thumbnail.originalName}
+                              className="w-full h-full object-cover"
+                              height={48}
+                              src={product.thumbnail.url}
+                              width={48}
+                            />
+                          ) : (
+                            <PhotoIcon className="w-6 h-6 text-gray-400" />
+                          )}
+                        </div>
+                        <div className="hidden md:block text-sm">
+                          <p className="text-gray-600 text-xs sm:text-sm">
+                            {product.thumbnail?.originalName || "Sem imagem"}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            {product.thumbnail?.size
+                              ? formatFileSize(product.thumbnail.size)
+                              : ""}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <Chip
+                        color={product.status ? "success" : "danger"}
                         size="sm"
-                        variant="light"
-                        onPress={() => handleOpenModal("view", product)}
+                        variant="flat"
                       >
-                        <EyeIcon className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        isIconOnly
-                        size="sm"
-                        variant="light"
-                        onPress={() => handleOpenModal("edit", product)}
-                      >
-                        <PencilIcon className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        isIconOnly
-                        color="danger"
-                        size="sm"
-                        variant="light"
-                        onPress={() => handleDeleteProduct(product.id)}
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                        {product.status ? "Ativo" : "Inativo"}
+                      </Chip>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">{formatDate(product.createdAt)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 sm:gap-2">
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="light"
+                          onPress={() => handleOpenModal("view", product)}
+                        >
+                          <EyeIcon className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="light"
+                          onPress={() => handleOpenModal("edit", product)}
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          isIconOnly
+                          color="danger"
+                          size="sm"
+                          variant="light"
+                          onPress={() => handleDeleteProduct(product.id)}
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardBody>
       </Card>
 
@@ -561,9 +578,12 @@ export default function ProdutosPage() {
             showShadow
             color="primary"
             page={currentPage}
-            size="lg"
+            size="md"
             total={pagination.totalPages}
             onChange={(page) => setCurrentPage(page)}
+            classNames={{
+              wrapper: "gap-1 sm:gap-2",
+            }}
           />
         </div>
       )}
