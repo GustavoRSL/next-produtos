@@ -3,40 +3,15 @@
 import type { Product } from "@/lib/services/products";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import {
-  Card,
-  CardBody,
-  Button,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Chip,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-  Input,
-  Switch,
-  Textarea,
-  Pagination,
-} from "@heroui/react";
-import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  EyeIcon,
-  PhotoIcon,
-  MagnifyingGlassIcon,
-  CubeIcon,
-} from "@heroicons/react/24/outline";
+import { Button, useDisclosure } from "@heroui/react";
+import { PlusIcon, CubeIcon } from "@heroicons/react/24/outline";
 
 import { DashboardLayout } from "@/components/layout";
+import ProductFormModal from "@/components/produtos/ProductFormModal";
+import ProductsTable from "@/components/produtos/ProductsTable";
+import StatCard from "@/components/ui/StatCard";
+import SearchFilter from "@/components/ui/SearchFilter";
+import Pagination from "@/components/ui/Pagination";
 import { useProductStore } from "@/lib/stores/products";
 
 export default function ProdutosPage() {
@@ -297,19 +272,6 @@ export default function ProdutosPage() {
     setImagePreview(null);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR");
-  };
-
-  const formatFileSize = (bytes: number) => {
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-
-    if (bytes === 0) return "0 Bytes";
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
-  };
-
   const handleUpdateProductThumbnail = async () => {
     if (!selectedProduct || !thumbnailFile) return;
 
@@ -373,523 +335,87 @@ export default function ProdutosPage() {
       </div>
 
       {/* Filtros */}
-      <Card className="mb-6">
-        <CardBody className="p-4">
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-            <div className="w-full md:flex-1">
-              <Input
-                fullWidth
-                isClearable
-                endContent={
-                  <Button
-                    isIconOnly
-                    color="primary"
-                    size="sm"
-                    onPress={() => handleSearch()}
-                  >
-                    <MagnifyingGlassIcon className="w-4 h-4" />
-                  </Button>
-                }
-                label="Buscar por nome"
-                placeholder="Digite o nome do produto..."
-                size="lg"
-                value={nameFilter}
-                onChange={(e) => setNameFilter(e.target.value)}
-                onClear={() => {
-                  setNameFilter("");
-                  setSearchTerm("");
-                  setCurrentPage(1);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSearch();
-                  }
-                }}
-              />
-            </div>
-            <Button
-              className="w-full md:w-auto"
-              size="lg"
-              variant="flat"
-              onPress={() => {
-                setNameFilter("");
-                setSearchTerm("");
-                setCurrentPage(1);
-              }}
-            >
-              Limpar Filtros
-            </Button>
-          </div>
-        </CardBody>
-      </Card>
+      <SearchFilter
+        handleSearch={handleSearch}
+        nameFilter={nameFilter}
+        searchTerm={searchTerm}
+        setCurrentPage={setCurrentPage}
+        setNameFilter={setNameFilter}
+        setSearchTerm={setSearchTerm}
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800">
-          <CardBody className="p-3 sm:p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-blue-600 dark:text-blue-300">
-                  Total Produtos
-                </p>
-                <p className="text-lg sm:text-xl font-bold text-blue-900 dark:text-blue-100">
-                  {products.length}
-                </p>
-              </div>
-              <CubeIcon className="w-6 h-6 text-blue-600" />
+        <StatCard
+          gradient="from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800"
+          icon={<CubeIcon className="w-6 h-6" />}
+          iconColor="text-blue-600"
+          textColor="text-blue-600 dark:text-blue-300"
+          title="Total Produtos"
+          value={products.length}
+        />
+        <StatCard
+          gradient="from-green-50 to-green-100 dark:from-green-900 dark:to-green-800"
+          icon={
+            <div className="w-6 h-6 rounded-full bg-green-200 flex items-center justify-center">
+              <span className="text-green-700 text-xs">✓</span>
             </div>
-          </CardBody>
-        </Card>
-        <Card className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900 dark:to-green-800">
-          <CardBody className="p-3 sm:p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-green-600 dark:text-green-300">
-                  Produtos Ativos
-                </p>
-                <p className="text-lg sm:text-xl font-bold text-green-900 dark:text-green-100">
-                  {products.filter((p: Product) => p.status === true).length}
-                </p>
-              </div>
-              <div className="w-6 h-6 rounded-full bg-green-200 flex items-center justify-center">
-                <span className="text-green-700 text-xs">✓</span>
-              </div>
+          }
+          iconColor=""
+          textColor="text-green-600 dark:text-green-300"
+          title="Produtos Ativos"
+          value={products.filter((p: Product) => p.status === true).length}
+        />
+        <StatCard
+          gradient="from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 xs:col-span-2 md:col-span-1"
+          icon={
+            <div className="w-6 h-6 rounded-full bg-red-200 flex items-center justify-center">
+              <span className="text-red-700 text-xs">×</span>
             </div>
-          </CardBody>
-        </Card>
-        <Card className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 xs:col-span-2 md:col-span-1">
-          <CardBody className="p-3 sm:p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-red-600 dark:text-red-300">
-                  Produtos Inativos
-                </p>
-                <p className="text-lg sm:text-xl font-bold text-red-900 dark:text-red-100">
-                  {products.filter((p: Product) => p.status === false).length}
-                </p>
-              </div>
-              <div className="w-6 h-6 rounded-full bg-red-200 flex items-center justify-center">
-                <span className="text-red-700 text-xs">×</span>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
+          }
+          iconColor=""
+          textColor="text-red-600 dark:text-red-300"
+          title="Produtos Inativos"
+          value={products.filter((p: Product) => p.status === false).length}
+        />
       </div>
 
       {/* Products Table */}
-      <Card className="mb-6 overflow-hidden">
-        <CardBody className="p-0">
-          <div className="overflow-x-auto">
-            <Table
-              removeWrapper
-              aria-label="Tabela de produtos"
-              classNames={{
-                wrapper: "min-h-[400px]",
-              }}
-            >
-              <TableHeader>
-                <TableColumn>PRODUTO</TableColumn>
-                <TableColumn className="hidden md:table-cell">
-                  THUMBNAIL
-                </TableColumn>
-                <TableColumn className="hidden md:table-cell">
-                  STATUS
-                </TableColumn>
-                <TableColumn className="hidden lg:table-cell">
-                  CRIADO EM
-                </TableColumn>
-                <TableColumn className="w-[100px]">AÇÕES</TableColumn>
-              </TableHeader>
-              <TableBody emptyContent="Nenhum produto encontrado">
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 justify-between sm:justify-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-medium text-sm sm:text-base">
-                                {product.title}
-                              </p>
-                              <div className="sm:hidden">
-                                <Chip
-                                  color={product.status ? "success" : "danger"}
-                                  size="sm"
-                                  variant="flat"
-                                >
-                                  {product.status ? "Ativo" : "Inativo"}
-                                </Chip>
-                              </div>
-                            </div>
-                            <p className="text-xs sm:text-sm text-gray-500 max-w-[200px] sm:max-w-xs truncate">
-                              {product.description}
-                            </p>
-                          </div>
-                          {/* Miniatura para mobile (direita) */}
-                          <div className="md:hidden flex items-center">
-                            <div className="w-9 h-9 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
-                              {product.thumbnail?.url ? (
-                                <Image
-                                  alt="Mini thumbnail"
-                                  className="w-full h-full object-cover"
-                                  height={36}
-                                  src={product.thumbnail.url}
-                                  width={36}
-                                />
-                              ) : (
-                                <PhotoIcon className="w-4 h-4 text-gray-400" />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        {/* Data para mobile */}
-                        <div className="md:hidden flex items-center">
-                          <p className="text-xs text-gray-500">
-                            {formatDate(product.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                          {product.thumbnail?.url ? (
-                            <Image
-                              alt={product.thumbnail.originalName}
-                              className="w-full h-full object-cover"
-                              height={48}
-                              src={product.thumbnail.url}
-                              width={48}
-                            />
-                          ) : (
-                            <PhotoIcon className="w-5 h-5 md:w-6 md:h-6 text-gray-400" />
-                          )}
-                        </div>
-                        <div className="text-sm">
-                          <p className="text-gray-600 text-xs md:text-sm max-w-[120px] lg:max-w-full truncate">
-                            {product.thumbnail?.originalName || "Sem imagem"}
-                          </p>
-                          <p className="text-gray-400 text-xs">
-                            {product.thumbnail?.size
-                              ? formatFileSize(product.thumbnail.size)
-                              : ""}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Chip
-                        color={product.status ? "success" : "danger"}
-                        size="sm"
-                        variant="flat"
-                      >
-                        {product.status ? "Ativo" : "Inativo"}
-                      </Chip>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {formatDate(product.createdAt)}
-                    </TableCell>
-                    <TableCell className="w-[100px] p-0 pr-2">
-                      <div className="flex flex-wrap gap-0.5 sm:gap-1 justify-end">
-                        <Button
-                          isIconOnly
-                          className="min-w-0 w-6 h-6 sm:w-7 sm:h-7 bg-blue-100 dark:bg-blue-900 text-blue-600"
-                          size="sm"
-                          title="Ver detalhes"
-                          onPress={() => handleOpenModal("view", product)}
-                        >
-                          <EyeIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        </Button>
-                        <Button
-                          isIconOnly
-                          className="min-w-0 w-6 h-6 sm:w-7 sm:h-7 bg-amber-100 dark:bg-amber-900 text-amber-600"
-                          size="sm"
-                          title="Editar produto"
-                          onPress={() => handleOpenModal("edit", product)}
-                        >
-                          <PencilIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        </Button>
-                        <Button
-                          isIconOnly
-                          className="min-w-0 w-6 h-6 sm:w-7 sm:h-7 bg-red-100 dark:bg-red-900 text-red-600"
-                          size="sm"
-                          title="Excluir produto"
-                          onPress={() => handleDeleteProduct(product.id)}
-                        >
-                          <TrashIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardBody>
-      </Card>
+      <ProductsTable
+        products={products}
+        onDelete={(productId) => handleDeleteProduct(productId)}
+        onEdit={(product) => handleOpenModal("edit", product)}
+        onView={(product) => handleOpenModal("view", product)}
+      />
 
       {/* Paginação */}
-      {pagination.totalPages > 1 && (
-        <div className="flex justify-center py-4 sm:py-6 sticky bottom-0 bg-gradient-to-t from-blue-50 to-transparent dark:from-gray-900 dark:to-transparent">
-          <Pagination
-            showControls
-            showShadow
-            className="sm:scale-110"
-            classNames={{
-              wrapper: "gap-0 xs:gap-1 sm:gap-2",
-              item: "w-8 h-8 sm:w-10 sm:h-10",
-              cursor: "bg-primary text-white font-semibold",
-            }}
-            color="primary"
-            page={currentPage}
-            size="sm"
-            total={pagination.totalPages}
-            onChange={(page) => setCurrentPage(page)}
-          />
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={pagination.totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Modal */}
-      <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
-        <ModalContent>
-          <ModalHeader>
-            {modalMode === "create" && "Novo Produto"}
-            {modalMode === "edit" && "Editar Produto"}
-            {modalMode === "view" && "Detalhes do Produto"}
-          </ModalHeader>
-          <ModalBody>
-            <div className="space-y-4">
-              <Input
-                isReadOnly={modalMode === "view"}
-                label="Título"
-                placeholder="Digite o título do produto"
-                value={
-                  modalMode === "view"
-                    ? selectedProduct?.title || ""
-                    : formData.title
-                }
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-              />
-              <Textarea
-                isReadOnly={modalMode === "view"}
-                label="Descrição"
-                minRows={3}
-                placeholder="Digite a descrição do produto"
-                value={
-                  modalMode === "view"
-                    ? selectedProduct?.description || ""
-                    : formData.description
-                }
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-              />
-              {modalMode === "edit" && (
-                <>
-                  <Switch
-                    isSelected={formData.status}
-                    onValueChange={(isSelected) =>
-                      setFormData({ ...formData, status: isSelected })
-                    }
-                  >
-                    Produto Ativo
-                  </Switch>
-
-                  <div className="space-y-2">
-                    <p className="block text-sm font-medium text-gray-700">
-                      Atualizar Thumbnail
-                    </p>
-                    <div
-                      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-                        isDragOver
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-300"
-                      }`}
-                      onDragLeave={handleDragLeave}
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                    >
-                      {imagePreview ? (
-                        <div className="space-y-2">
-                          <div className="relative inline-block">
-                            <Image
-                              alt="Preview"
-                              className="max-w-32 max-h-32 object-cover rounded-lg"
-                              height={128}
-                              src={imagePreview}
-                              width={128}
-                            />
-                            <button
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs"
-                              type="button"
-                              onClick={removeSelectedFile}
-                            >
-                              ×
-                            </button>
-                          </div>
-                          <p className="text-xs text-gray-600">
-                            {thumbnailFile?.name}
-                          </p>
-                          <Button
-                            color="primary"
-                            isLoading={isLoading}
-                            size="sm"
-                            onPress={handleUpdateProductThumbnail}
-                          >
-                            Atualizar Thumbnail
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          <PhotoIcon className="mx-auto h-8 w-8 text-gray-400" />
-                          <p className="mt-1 text-xs text-gray-600">
-                            Nova imagem (opcional)
-                          </p>
-                          <input
-                            accept="image/*"
-                            className="hidden"
-                            id="thumbnail-upload-edit"
-                            type="file"
-                            onChange={handleFileChange}
-                          />
-                          <label
-                            className="cursor-pointer inline-block mt-1 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-                            htmlFor="thumbnail-upload-edit"
-                          >
-                            Selecionar
-                          </label>
-                        </>
-                      )}
-                    </div>
-
-                    {selectedProduct?.thumbnail && (
-                      <div className="text-xs text-gray-500">
-                        <p>
-                          Thumbnail atual:{" "}
-                          {selectedProduct.thumbnail.originalName}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-              {modalMode === "view" && (
-                <div className="space-y-2">
-                  <p>
-                    <strong>Status:</strong>{" "}
-                    {selectedProduct?.status ? "Ativo" : "Inativo"}
-                  </p>
-                  <p>
-                    <strong>Criado em:</strong>{" "}
-                    {selectedProduct
-                      ? formatDate(selectedProduct.createdAt)
-                      : ""}
-                  </p>
-                  <p>
-                    <strong>Atualizado em:</strong>{" "}
-                    {selectedProduct
-                      ? formatDate(selectedProduct.updatedAt)
-                      : ""}
-                  </p>
-                  {selectedProduct?.thumbnail && (
-                    <div>
-                      <strong>Thumbnail:</strong>
-                      <p className="text-sm text-gray-600">
-                        {selectedProduct.thumbnail.originalName} (
-                        {formatFileSize(selectedProduct.thumbnail.size || 0)})
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-              {modalMode === "create" && (
-                <div
-                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                    isDragOver
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-300"
-                  }`}
-                  onDragLeave={handleDragLeave}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                >
-                  {imagePreview ? (
-                    <div className="space-y-4">
-                      <div className="relative inline-block">
-                        <Image
-                          alt="Preview"
-                          className="max-w-48 max-h-48 object-cover rounded-lg"
-                          height={192}
-                          src={imagePreview}
-                          width={192}
-                        />
-                        <button
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                          type="button"
-                          onClick={removeSelectedFile}
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        {thumbnailFile?.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Clique no X para remover ou arraste uma nova imagem
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                      <p className="mt-2 text-sm text-gray-600">
-                        Clique para adicionar uma imagem ou arraste aqui
-                      </p>
-                      <input
-                        accept="image/*"
-                        className="hidden"
-                        id="thumbnail-upload"
-                        type="file"
-                        onChange={handleFileChange}
-                      />
-                      <label
-                        className="cursor-pointer inline-block mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                        htmlFor="thumbnail-upload"
-                      >
-                        Selecionar Arquivo
-                      </label>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onClose}>
-              {modalMode === "view" ? "Fechar" : "Cancelar"}
-            </Button>
-            {modalMode === "create" && (
-              <Button
-                color="primary"
-                isLoading={isLoading}
-                onPress={handleCreateProduct}
-              >
-                Criar
-              </Button>
-            )}
-            {modalMode === "edit" && (
-              <Button
-                color="primary"
-                isLoading={isLoading}
-                onPress={handleUpdateProduct}
-              >
-                Salvar
-              </Button>
-            )}
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <ProductFormModal
+        formData={formData}
+        handleCreateProduct={handleCreateProduct}
+        handleDragLeave={handleDragLeave}
+        handleDragOver={handleDragOver}
+        handleDrop={handleDrop}
+        handleFileChange={handleFileChange}
+        handleUpdateProduct={handleUpdateProduct}
+        handleUpdateProductThumbnail={handleUpdateProductThumbnail}
+        imagePreview={imagePreview}
+        isDragOver={isDragOver}
+        isLoading={isLoading}
+        isOpen={isOpen}
+        modalMode={modalMode}
+        removeSelectedFile={removeSelectedFile}
+        selectedProduct={selectedProduct}
+        setFormData={setFormData}
+        thumbnailFile={thumbnailFile}
+        onClose={onClose}
+      />
     </DashboardLayout>
   );
 }
