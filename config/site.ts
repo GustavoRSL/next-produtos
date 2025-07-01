@@ -13,6 +13,10 @@ export const siteConfig = {
       label: "Produtos",
       href: "/produtos",
     },
+    {
+      label: "Entrar",
+      href: "/auth",
+    },
   ],
   navMenuItems: [
     {
@@ -22,6 +26,10 @@ export const siteConfig = {
     {
       label: "Produtos",
       href: "/produtos",
+    },
+    {
+      label: "Entrar",
+      href: "/auth",
     },
   ],
   links: {
