@@ -113,13 +113,6 @@ export default function AuthPage() {
             Veja todas as análises e faça crescer seu negócio de qualquer lugar!
           </p>
         </div>
-
-        <div className="relative z-10 flex justify-center space-x-2">
-          <div className="w-2 h-2 bg-orange-500 rounded-full" />
-          <div className="w-2 h-2 bg-slate-600 rounded-full" />
-          <div className="w-2 h-2 bg-slate-600 rounded-full" />
-          <div className="w-2 h-2 bg-slate-600 rounded-full" />
-        </div>
       </div>
 
       {/* Right side - Auth Form */}
