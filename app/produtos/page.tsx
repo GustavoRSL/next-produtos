@@ -33,6 +33,7 @@ import {
   EyeIcon,
   PhotoIcon,
   MagnifyingGlassIcon,
+  CubeIcon,
 } from "@heroicons/react/24/outline";
 
 import { DashboardLayout } from "@/components/layout";
@@ -423,34 +424,53 @@ export default function ProdutosPage() {
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mb-6">
-        <Card>
-          <CardBody className="p-2 sm:p-3">
-            <div className="text-center">
-              <p className="text-lg sm:text-xl font-bold text-blue-600">
-                {products.length}
-              </p>
-              <p className="text-xs sm:text-sm text-gray-600">Total de Produtos</p>
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800">
+          <CardBody className="p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-blue-600 dark:text-blue-300">
+                  Total Produtos
+                </p>
+                <p className="text-lg sm:text-xl font-bold text-blue-900 dark:text-blue-100">
+                  {products.length}
+                </p>
+              </div>
+              <CubeIcon className="w-6 h-6 text-blue-600" />
             </div>
           </CardBody>
         </Card>
-        <Card>
-          <CardBody className="p-2 sm:p-3">
-            <div className="text-center">
-              <p className="text-lg sm:text-xl font-bold text-green-600">
-                {products.filter((p: Product) => p.status === true).length}
-              </p>
-              <p className="text-xs sm:text-sm text-gray-600">Produtos Ativos</p>
+        <Card className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900 dark:to-green-800">
+          <CardBody className="p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-green-600 dark:text-green-300">
+                  Produtos Ativos
+                </p>
+                <p className="text-lg sm:text-xl font-bold text-green-900 dark:text-green-100">
+                  {products.filter((p: Product) => p.status === true).length}
+                </p>
+              </div>
+              <div className="w-6 h-6 rounded-full bg-green-200 flex items-center justify-center">
+                <span className="text-green-700 text-xs">✓</span>
+              </div>
             </div>
           </CardBody>
         </Card>
-        <Card className="col-span-2 md:col-span-1">
-          <CardBody className="p-2 sm:p-3">
-            <div className="text-center">
-              <p className="text-lg sm:text-xl font-bold text-red-600">
-                {products.filter((p: Product) => p.status === false).length}
-              </p>
-              <p className="text-xs sm:text-sm text-gray-600">Produtos Inativos</p>
+        <Card className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 xs:col-span-2 md:col-span-1">
+          <CardBody className="p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-red-600 dark:text-red-300">
+                  Produtos Inativos
+                </p>
+                <p className="text-lg sm:text-xl font-bold text-red-900 dark:text-red-100">
+                  {products.filter((p: Product) => p.status === false).length}
+                </p>
+              </div>
+              <div className="w-6 h-6 rounded-full bg-red-200 flex items-center justify-center">
+                <span className="text-red-700 text-xs">×</span>
+              </div>
             </div>
           </CardBody>
         </Card>
@@ -469,36 +489,60 @@ export default function ProdutosPage() {
             >
               <TableHeader>
                 <TableColumn>PRODUTO</TableColumn>
-                <TableColumn className="hidden sm:table-cell">THUMBNAIL</TableColumn>
+                <TableColumn className="hidden md:table-cell">THUMBNAIL</TableColumn>
                 <TableColumn className="hidden md:table-cell">STATUS</TableColumn>
                 <TableColumn className="hidden lg:table-cell">CRIADO EM</TableColumn>
-                <TableColumn>AÇÕES</TableColumn>
+                <TableColumn className="w-[100px]">AÇÕES</TableColumn>
               </TableHeader>
               <TableBody emptyContent="Nenhum produto encontrado">
                 {products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
-                      <div>
-                        <p className="font-medium">{product.title}</p>
-                        <p className="text-sm text-gray-500 max-w-[150px] sm:max-w-xs truncate">
-                          {product.description}
-                        </p>
-                        {/* Status e data para mobile */}
-                        <div className="block sm:hidden mt-2 space-y-1">
-                          <Chip
-                            color={product.status ? "success" : "danger"}
-                            size="sm"
-                            variant="flat"
-                          >
-                            {product.status ? "Ativo" : "Inativo"}
-                          </Chip>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 justify-between sm:justify-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-medium text-sm sm:text-base">{product.title}</p>
+                              <div className="sm:hidden">
+                                <Chip
+                                  color={product.status ? "success" : "danger"}
+                                  size="sm"
+                                  variant="flat"
+                                >
+                                  {product.status ? "Ativo" : "Inativo"}
+                                </Chip>
+                              </div>
+                            </div>
+                            <p className="text-xs sm:text-sm text-gray-500 max-w-[200px] sm:max-w-xs truncate">
+                              {product.description}
+                            </p>
+                          </div>
+                          {/* Miniatura para mobile (direita) */}
+                          <div className="md:hidden flex items-center">
+                            <div className="w-9 h-9 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                              {product.thumbnail?.url ? (
+                                <Image
+                                  alt="Mini thumbnail"
+                                  className="w-full h-full object-cover"
+                                  height={36}
+                                  src={product.thumbnail.url}
+                                  width={36}
+                                />
+                              ) : (
+                                <PhotoIcon className="w-4 h-4 text-gray-400" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        {/* Data para mobile */}
+                        <div className="md:hidden flex items-center">
                           <p className="text-xs text-gray-500">{formatDate(product.createdAt)}</p>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">
+                    <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                           {product.thumbnail?.url ? (
                             <Image
                               alt={product.thumbnail.originalName}
@@ -508,11 +552,11 @@ export default function ProdutosPage() {
                               width={48}
                             />
                           ) : (
-                            <PhotoIcon className="w-6 h-6 text-gray-400" />
+                            <PhotoIcon className="w-5 h-5 md:w-6 md:h-6 text-gray-400" />
                           )}
                         </div>
-                        <div className="hidden md:block text-sm">
-                          <p className="text-gray-600 text-xs sm:text-sm">
+                        <div className="text-sm">
+                          <p className="text-gray-600 text-xs md:text-sm max-w-[120px] lg:max-w-full truncate">
                             {product.thumbnail?.originalName || "Sem imagem"}
                           </p>
                           <p className="text-gray-400 text-xs">
@@ -533,32 +577,34 @@ export default function ProdutosPage() {
                       </Chip>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">{formatDate(product.createdAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1 sm:gap-2">
+                    <TableCell className="w-[100px] p-0 pr-2">
+                      <div className="flex flex-wrap gap-0.5 sm:gap-1 justify-end">
                         <Button
                           isIconOnly
                           size="sm"
-                          variant="light"
+                          className="min-w-0 w-6 h-6 sm:w-7 sm:h-7 bg-blue-100 dark:bg-blue-900 text-blue-600"
                           onPress={() => handleOpenModal("view", product)}
+                          title="Ver detalhes"
                         >
-                          <EyeIcon className="w-4 h-4" />
+                          <EyeIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </Button>
                         <Button
                           isIconOnly
                           size="sm"
-                          variant="light"
+                          className="min-w-0 w-6 h-6 sm:w-7 sm:h-7 bg-amber-100 dark:bg-amber-900 text-amber-600"
                           onPress={() => handleOpenModal("edit", product)}
+                          title="Editar produto"
                         >
-                          <PencilIcon className="w-4 h-4" />
+                          <PencilIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </Button>
                         <Button
                           isIconOnly
-                          color="danger"
                           size="sm"
-                          variant="light"
+                          className="min-w-0 w-6 h-6 sm:w-7 sm:h-7 bg-red-100 dark:bg-red-900 text-red-600"
                           onPress={() => handleDeleteProduct(product.id)}
+                          title="Excluir produto"
                         >
-                          <TrashIcon className="w-4 h-4" />
+                          <TrashIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </Button>
                       </div>
                     </TableCell>
@@ -572,17 +618,20 @@ export default function ProdutosPage() {
 
       {/* Paginação */}
       {pagination.totalPages > 1 && (
-        <div className="flex justify-center py-4 sticky bottom-0 bg-gradient-to-t from-blue-50 to-transparent dark:from-gray-900 dark:to-transparent">
+        <div className="flex justify-center py-4 sm:py-6 sticky bottom-0 bg-gradient-to-t from-blue-50 to-transparent dark:from-gray-900 dark:to-transparent">
           <Pagination
             showControls
             showShadow
             color="primary"
             page={currentPage}
-            size="md"
+            size="sm"
+            className="sm:scale-110"
             total={pagination.totalPages}
             onChange={(page) => setCurrentPage(page)}
             classNames={{
-              wrapper: "gap-1 sm:gap-2",
+              wrapper: "gap-0 xs:gap-1 sm:gap-2",
+              item: "w-8 h-8 sm:w-10 sm:h-10",
+              cursor: "bg-primary text-white font-semibold",
             }}
           />
         </div>
