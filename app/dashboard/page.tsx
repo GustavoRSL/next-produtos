@@ -245,12 +245,9 @@ export default function DashboardPage() {
               Produtos por Categoria
             </h3>
             <div className="grid grid-cols-2 gap-6">
-              <div className="text-center">
+              <div className="text-center flex flex-col items-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                   Total de Produtos
-                </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  576
                 </p>
                 <DonutChart
                   centerValue="576"
@@ -258,12 +255,9 @@ export default function DashboardPage() {
                   size={120}
                 />
               </div>
-              <div className="text-center">
+              <div className="text-center flex flex-col items-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                   Status do Estoque
-                </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  2.007
                 </p>
                 <DonutChart
                   centerValue="2.007"
@@ -272,43 +266,68 @@ export default function DashboardPage() {
                 />
               </div>
             </div>
-            <div className="mt-6 space-y-2">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-cyan-500 rounded-full mr-2" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Eletrônicos
-                  </span>
-                </div>
-                <div className="flex space-x-8">
-                  <span className="text-sm font-medium">245</span>
-                  <span className="text-sm font-medium">1.450</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Roupas
-                  </span>
-                </div>
-                <div className="flex space-x-8">
-                  <span className="text-sm font-medium">132</span>
-                  <span className="text-sm font-medium">234</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-amber-500 rounded-full mr-2" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Casa
-                  </span>
-                </div>
-                <div className="flex space-x-8">
-                  <span className="text-sm font-medium">89</span>
-                  <span className="text-sm font-medium">89</span>
-                </div>
-              </div>
+            <div className="mt-6 overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Categoria</th>
+                    <th className="py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Produtos</th>
+                    <th className="py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Em Estoque</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr>
+                    <td className="py-2">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-cyan-500 rounded-full mr-2" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Eletrônicos</span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right text-sm font-medium">245</td>
+                    <td className="py-2 text-right text-sm font-medium">1.450</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Roupas</span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right text-sm font-medium">132</td>
+                    <td className="py-2 text-right text-sm font-medium">234</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-amber-500 rounded-full mr-2" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Casa</span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right text-sm font-medium">89</td>
+                    <td className="py-2 text-right text-sm font-medium">89</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-red-500 rounded-full mr-2" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Esporte</span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right text-sm font-medium">67</td>
+                    <td className="py-2 text-right text-sm font-medium">156</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-purple-500 rounded-full mr-2" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Livros</span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right text-sm font-medium">43</td>
+                    <td className="py-2 text-right text-sm font-medium">78</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </CardBody>
         </Card>
@@ -394,6 +413,61 @@ export default function DashboardPage() {
                 }}
                 size={chartSize.donutSizeLarge}
               />
+            </div>
+            <div className="mt-6 overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Quantidade
+                    </th>
+                    <th className="py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Percentual
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr>
+                    <td className="py-2">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-cyan-500 rounded-full mr-2" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Em Estoque
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right text-sm font-medium">1.450</td>
+                    <td className="py-2 text-right text-sm font-medium">72,2%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-amber-500 rounded-full mr-2" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Baixo Estoque
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right text-sm font-medium">234</td>
+                    <td className="py-2 text-right text-sm font-medium">11,7%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-red-500 rounded-full mr-2" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Sem Estoque
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-right text-sm font-medium">323</td>
+                    <td className="py-2 text-right text-sm font-medium">16,1%</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </CardBody>
         </Card>
