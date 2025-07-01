@@ -24,6 +24,7 @@ import {
   Input,
   Switch,
   Textarea,
+  Pagination,
 } from "@heroui/react";
 import {
   PlusIcon,
@@ -31,6 +32,7 @@ import {
   TrashIcon,
   EyeIcon,
   PhotoIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
 import { DashboardLayout } from "@/components/layout";
@@ -39,6 +41,7 @@ import { useProductStore } from "@/lib/stores/products";
 export default function ProdutosPage() {
   const {
     products,
+    pagination,
     isLoading,
     error,
     fetchProducts,
@@ -63,9 +66,52 @@ export default function ProdutosPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  // Estados dos filtros e paginação
+  const [nameFilter, setNameFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Função para buscar produtos
+  const handleSearch = () => {
+    const params: any = {
+      page: 1, // Volta para a primeira página ao fazer uma nova busca
+      pageSize: 10,
+    };
+
+    if (nameFilter.trim()) {
+      params.filter = nameFilter.trim();
+    }
+
+    setSearchTerm(nameFilter.trim());
+    setCurrentPage(1); // Reinicia a paginação
+    fetchProducts(params);
+  };
+
+  // Busca imediata ao mudar página
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    const params: any = {
+      page: currentPage,
+      pageSize: 10,
+    };
+
+    if (searchTerm) {
+      params.filter = searchTerm;
+    }
+
+    fetchProducts(params);
+  }, [fetchProducts, searchTerm, currentPage]);
+
+  // Debounce para busca automática ao digitar
+  useEffect(() => {
+    // Não executar o efeito quando o componente é montado pela primeira vez
+    if (nameFilter === "") return;
+
+    const timeoutId = setTimeout(() => {
+      handleSearch();
+    }, 500); // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [nameFilter]);
 
   // Limpar erro quando fechar modal
   useEffect(() => {
@@ -121,6 +167,21 @@ export default function ProdutosPage() {
       setFormData({ title: "", description: "", status: true });
       setThumbnailFile(null);
       setImagePreview(null);
+
+      // Recarregar a primeira página após criar
+      setCurrentPage(1);
+
+      // Recarregar produtos com filtros atuais
+      const params: any = {
+        page: 1,
+        pageSize: 10,
+      };
+
+      if (searchTerm) {
+        params.filter = searchTerm;
+      }
+
+      await fetchProducts(params);
     } catch {
       // Error handled by store
     }
@@ -136,6 +197,18 @@ export default function ProdutosPage() {
         status: formData.status,
       });
 
+      // Recarregar produtos na página atual
+      const params: any = {
+        page: currentPage,
+        pageSize: 10,
+      };
+
+      if (searchTerm) {
+        params.filter = searchTerm;
+      }
+
+      await fetchProducts(params);
+
       onClose();
     } catch {
       // Error handled by store
@@ -146,6 +219,26 @@ export default function ProdutosPage() {
     if (confirm("Tem certeza que deseja excluir este produto?")) {
       try {
         await deleteProduct(productId);
+
+        // Recarregar produtos na página atual (ou anterior se a página atual ficar vazia)
+        let page = currentPage;
+
+        // Se excluiu o último item da página atual, voltar para a página anterior (exceto se já estiver na primeira página)
+        if (products.length === 1 && currentPage > 1) {
+          page = currentPage - 1;
+          setCurrentPage(page);
+        }
+
+        const params: any = {
+          page,
+          pageSize: 10,
+        };
+
+        if (searchTerm) {
+          params.filter = searchTerm;
+        }
+
+        await fetchProducts(params);
       } catch {
         // Error handled by store
       }
@@ -221,10 +314,19 @@ export default function ProdutosPage() {
 
     try {
       await updateProductThumbnail(selectedProduct.id, thumbnailFile);
-      
-      // Recarregar produtos para mostrar a nova thumbnail
-      await fetchProducts();
-      
+
+      // Recarregar produtos na página atual
+      const params: any = {
+        page: currentPage,
+        pageSize: 10,
+      };
+
+      if (searchTerm) {
+        params.filter = searchTerm;
+      }
+
+      await fetchProducts(params);
+
       // Limpar seleção de arquivo
       setThumbnailFile(null);
       setImagePreview(null);
@@ -268,12 +370,59 @@ export default function ProdutosPage() {
         </Button>
       </div>
 
+      {/* Filtros */}
+      <Card className="mb-6">
+        <CardBody className="p-4">
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <Input
+                isClearable
+                endContent={
+                  <Button
+                    isIconOnly
+                    color="primary"
+                    size="sm"
+                    onPress={() => handleSearch()}
+                  >
+                    <MagnifyingGlassIcon className="w-4 h-4" />
+                  </Button>
+                }
+                label="Buscar por nome"
+                placeholder="Digite o nome do produto..."
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+                onClear={() => {
+                  setNameFilter("");
+                  setSearchTerm("");
+                  setCurrentPage(1);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+              />
+            </div>
+            <Button
+              variant="flat"
+              onPress={() => {
+                setNameFilter("");
+                setSearchTerm("");
+                setCurrentPage(1);
+              }}
+            >
+              Limpar Filtros
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <Card>
-          <CardBody className="p-4">
+          <CardBody className="p-3">
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-xl font-bold text-blue-600">
                 {products.length}
               </p>
               <p className="text-sm text-gray-600">Total de Produtos</p>
@@ -281,9 +430,9 @@ export default function ProdutosPage() {
           </CardBody>
         </Card>
         <Card>
-          <CardBody className="p-4">
+          <CardBody className="p-3">
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600">
                 {products.filter((p: Product) => p.status === true).length}
               </p>
               <p className="text-sm text-gray-600">Produtos Ativos</p>
@@ -291,9 +440,9 @@ export default function ProdutosPage() {
           </CardBody>
         </Card>
         <Card>
-          <CardBody className="p-4">
+          <CardBody className="p-3">
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-xl font-bold text-red-600">
                 {products.filter((p: Product) => p.status === false).length}
               </p>
               <p className="text-sm text-gray-600">Produtos Inativos</p>
@@ -303,9 +452,14 @@ export default function ProdutosPage() {
       </div>
 
       {/* Products Table */}
-      <Card>
-        <CardBody>
-          <Table aria-label="Tabela de produtos">
+      <Card className="mb-6">
+        <CardBody className="p-0">
+          <Table
+            aria-label="Tabela de produtos"
+            classNames={{
+              wrapper: "min-h-[400px]",
+            }}
+          >
             <TableHeader>
               <TableColumn>PRODUTO</TableColumn>
               <TableColumn>THUMBNAIL</TableColumn>
@@ -397,6 +551,21 @@ export default function ProdutosPage() {
         </CardBody>
       </Card>
 
+      {/* Paginação */}
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center py-4 sticky bottom-0 bg-gradient-to-t from-blue-50 to-transparent dark:from-gray-900 dark:to-transparent">
+          <Pagination
+            showControls
+            showShadow
+            color="primary"
+            page={currentPage}
+            size="lg"
+            total={pagination.totalPages}
+            onChange={(page) => setCurrentPage(page)}
+          />
+        </div>
+      )}
+
       {/* Modal */}
       <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
         <ModalContent>
@@ -444,7 +613,7 @@ export default function ProdutosPage() {
                   >
                     Produto Ativo
                   </Switch>
-                  
+
                   <div className="space-y-2">
                     <p className="block text-sm font-medium text-gray-700">
                       Atualizar Thumbnail
@@ -511,7 +680,7 @@ export default function ProdutosPage() {
                         </>
                       )}
                     </div>
-                    
+
                     {selectedProduct?.thumbnail && (
                       <div className="text-xs text-gray-500">
                         <p>

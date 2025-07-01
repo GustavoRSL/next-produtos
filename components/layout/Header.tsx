@@ -1,8 +1,7 @@
 "use client";
 
-import { Button, Input } from "@heroui/react";
+import { Button } from "@heroui/react";
 import {
-  MagnifyingGlassIcon,
   BellIcon,
   Cog6ToothIcon,
   UserIcon,
@@ -27,25 +26,15 @@ export function Header({ title }: HeaderProps) {
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-      <div className="px-6 py-4">
+      <div className="px-6 py-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               {title}
             </h1>
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Input
-                className="w-80"
-                placeholder="Buscar produtos..."
-                startContent={
-                  <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
-                }
-                variant="bordered"
-              />
-            </div>
             <Button isIconOnly variant="ghost">
               <BellIcon className="w-5 h-5 text-gray-600" />
             </Button>

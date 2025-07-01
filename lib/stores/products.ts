@@ -92,9 +92,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ isLoading: true, error: null });
       const response = await productService.createProduct(data);
 
-      // Recarregar lista de produtos após criar
-      await get().fetchProducts();
-
+      // A atualização da lista agora é feita explicitamente pelo componente
+      // que chamará fetchProducts com os parâmetros adequados
       set({ isLoading: false });
 
       return response;
@@ -112,13 +111,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ isLoading: true, error: null });
       const response = await productService.updateProduct(id, data);
 
-      // Atualizar produto na lista se existir
-      const { products } = get();
-      const updatedProducts = products.map((product) =>
-        product.id === id ? { ...product, ...data } : product,
-      );
-
-      set({ products: updatedProducts, isLoading: false });
+      // A atualização agora é feita explicitamente pelo componente
+      // que chamará fetchProducts com os parâmetros adequados
+      set({ isLoading: false });
 
       return response;
     } catch (error) {
@@ -134,10 +129,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       await productService.deleteProduct(id);
-      const { products } = get();
-      const filteredProducts = products.filter((product) => product.id !== id);
 
-      set({ products: filteredProducts, isLoading: false });
+      // A atualização da lista agora é feita explicitamente pelo componente
+      // que chamará fetchProducts com os parâmetros adequados
+      set({ isLoading: false });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Erro ao excluir produto";

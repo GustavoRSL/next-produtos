@@ -35,9 +35,9 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <Sidebar />
-      <div className="ml-64">
+      <div className="ml-64 h-screen flex flex-col">
         <Header title={title} />
-        <div className="p-6">{children}</div>
+        <div className="py-4 px-5 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );
