@@ -2,7 +2,8 @@
 
 import type { RegisterFormData, LoginFormData } from "@/lib/validations/auth";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardBody,
@@ -16,19 +17,37 @@ import {
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 import { registerSchema, loginSchema } from "@/lib/validations/auth";
+import { useAuthStore } from "@/lib/stores/auth";
 
 export default function AuthPage() {
+  const router = useRouter();
+  const {
+    login,
+    register: registerUser,
+    isLoading,
+    isAuthenticated,
+  } = useAuthStore();
+
   const [isLoginMode, setIsLoginMode] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
     useState(false);
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
   const {
     register: registerLogin,
     handleSubmit: handleSubmitLogin,
     formState: { errors: loginErrors },
+    reset: resetLogin,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
@@ -37,18 +56,35 @@ export default function AuthPage() {
     register: registerSignup,
     handleSubmit: handleSubmitSignup,
     formState: { errors: signupErrors },
+    reset: resetSignup,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
 
-  const onLoginSubmit = (data: LoginFormData) => {
-    console.log("Login data:", data);
-    // TODO: Implementar lógica de login
+  const onLoginSubmit = async (data: LoginFormData) => {
+    try {
+      await login(data);
+      toast.success("Login realizado com sucesso!");
+      router.push("/dashboard");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao fazer login";
+
+      toast.error(errorMessage);
+    }
   };
 
-  const onSignupSubmit = (data: RegisterFormData) => {
-    console.log("Signup data:", data);
-    // TODO: Implementar lógica de registro
+  const onSignupSubmit = async (data: RegisterFormData) => {
+    try {
+      await registerUser(data);
+      toast.success("Cadastro realizado com sucesso!");
+      router.push("/dashboard");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao criar conta";
+
+      toast.error(errorMessage);
+    }
   };
 
   return (
@@ -95,13 +131,30 @@ export default function AuthPage() {
             <Tabs
               className="mb-6"
               classNames={{
-                tabList: "grid w-full grid-cols-2 bg-default-100 p-1 rounded-lg",
+                tabList:
+                  "grid w-full grid-cols-2 bg-default-100 p-1 rounded-lg",
                 cursor: "w-full bg-primary rounded-md",
                 tab: "w-full h-12 rounded-md",
-                tabContent: "group-data-[selected=true]:text-white w-full text-center",
+                tabContent:
+                  "group-data-[selected=true]:text-white w-full text-center",
               }}
               selectedKey={isLoginMode ? "login" : "signup"}
-              onSelectionChange={(key) => setIsLoginMode(key === "login")}
+              onSelectionChange={(key) => {
+                const newIsLoginMode = key === "login";
+
+                setIsLoginMode(newIsLoginMode);
+
+                // Reset forms when switching tabs
+                if (newIsLoginMode) {
+                  resetSignup();
+                } else {
+                  resetLogin();
+                }
+
+                // Reset password visibility
+                setIsPasswordVisible(false);
+                setIsConfirmPasswordVisible(false);
+              }}
             >
               <Tab key="login" title="Entrar" />
               <Tab key="signup" title="Registrar" />
@@ -146,10 +199,11 @@ export default function AuthPage() {
                 <Button
                   className="w-full mt-6"
                   color="primary"
+                  isLoading={isLoading}
                   size="lg"
                   type="submit"
                 >
-                  Entrar
+                  {isLoading ? "Entrando..." : "Entrar"}
                 </Button>
               </form>
             ) : (
@@ -261,10 +315,11 @@ export default function AuthPage() {
                 <Button
                   className="w-full bg-orange-500 hover:bg-orange-600"
                   color="primary"
+                  isLoading={isLoading}
                   size="lg"
                   type="submit"
                 >
-                  Criar uma Conta
+                  {isLoading ? "Criando..." : "Criar uma Conta"}
                 </Button>
               </form>
             )}
