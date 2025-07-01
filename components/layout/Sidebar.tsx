@@ -34,7 +34,7 @@ export function Sidebar({ className = "" }: SidebarProps) {
             <span className="text-white font-bold text-sm">PS</span>
           </div>
           <span className="font-semibold text-gray-900 dark:text-white">
-            ProdStock
+            ProdManager
           </span>
         </div>
 

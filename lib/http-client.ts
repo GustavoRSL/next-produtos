@@ -23,14 +23,19 @@ class HttpClient {
       ...options,
     };
 
-    // Adicionar token de autenticação se existir
-    const token = this.getAuthToken();
+    // Verificar se é uma rota de autenticação (login/registro)
+    const isAuthRoute = this.isAuthenticationRoute(endpoint);
 
-    if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`,
-      };
+    // Adicionar token de autenticação se existir e não for rota de auth
+    if (!isAuthRoute) {
+      const token = this.getAuthToken();
+
+      if (token) {
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${token}`,
+        };
+      }
     }
 
     try {
@@ -68,9 +73,8 @@ class HttpClient {
 
           return parsed.state?.token || null;
         }
-      } catch (error) {
+      } catch {
         // Error parsing auth storage - fallback silently
-        console.error("Erro ao obter token do auth-storage:", error);
       }
 
       // Fallback para localStorage direto
@@ -132,18 +136,60 @@ class HttpClient {
 
   // Upload de arquivos
   public async upload<T>(endpoint: string, formData: FormData): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
     const token = this.getAuthToken();
     const headers: Record<string, string> = {};
 
+    // Adicionar token de autenticação se existir
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    return this.request<T>(endpoint, {
+    // NÃO definir Content-Type para FormData - o browser define automaticamente
+    const config: RequestInit = {
       method: "POST",
       body: formData,
       headers,
-    });
+    };
+
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({
+          message: response.statusText,
+        }));
+
+        throw new Error(error.message || `HTTP Error: ${response.status}`);
+      }
+
+      // Verificar se a resposta tem conteúdo
+      const contentType = response.headers.get("content-type");
+
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      }
+
+      return response.text() as unknown as T;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private isAuthenticationRoute(endpoint: string): boolean {
+    // Lista de rotas que não precisam de autenticação
+    const authRoutes = [
+      "/auth/login",
+      "/auth/register",
+      "/auth/signin",
+      "/auth/signup",
+      "/login",
+      "/register",
+      "/signin",
+      "/signup",
+    ];
+
+    return authRoutes.some((route) => endpoint.includes(route));
   }
 }
 

@@ -121,7 +121,7 @@ export const isValidFileType = (
   file: File,
   type: "image" | "file",
 ): boolean => {
-  const allowedTypes =
+  const allowedTypes: readonly string[] =
     type === "image"
       ? config.upload.allowedImageTypes
       : config.upload.allowedFileTypes;

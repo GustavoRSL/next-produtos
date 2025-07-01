@@ -55,17 +55,17 @@ export interface ApiError {
 
 // Serviços de autenticação
 export const authService = {
-  // Login
+  // Login - rota de auth (não precisa de token)
   async login(data: LoginFormData): Promise<LoginResponse> {
     return httpClient.post<LoginResponse>("/auth/login", data);
   },
 
-  // Registro
+  // Registro - rota de auth (não precisa de token)
   async register(data: RegisterFormData): Promise<RegisterResponse> {
     return httpClient.post<RegisterResponse>("/users", data);
   },
 
-  // Gerar novo token (refresh)
+  // Gerar novo token (refresh) - precisa de autenticação
   async refreshToken(): Promise<LoginResponse> {
     return httpClient.post<LoginResponse>("/auth/session");
   },

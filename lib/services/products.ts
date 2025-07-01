@@ -1,153 +1,115 @@
-import { httpClient, apiRequest } from "@/lib/http-client";
+import { httpClient } from "@/lib/http-client";
 
-// Types para produtos
+// Types para produtos baseados na API
 export interface Product {
   id: string;
-  name: string;
+  title: string;
   description: string;
-  price: number;
-  stock: number;
-  category: string;
-  imageUrl?: string;
-  sku: string;
-  isActive: boolean;
+  status: boolean;
+  thumbnail: {
+    url: string;
+    type: string;
+    originalName: string;
+    size?: number;
+  };
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreateProductRequest {
-  name: string;
+export interface CreateProductData {
+  title: string;
   description: string;
-  price: number;
-  stock: number;
-  category: string;
-  imageUrl?: string;
-  sku: string;
-  isActive?: boolean;
+  thumbnail: File; // arquivo de imagem
 }
 
-export interface UpdateProductRequest extends Partial<CreateProductRequest> {
-  id: string;
+export interface UpdateProductData {
+  title: string;
+  description: string;
+  status: boolean;
 }
 
 export interface ProductsResponse {
-  products: Product[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  data: Product[];
+  meta: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
-export interface ProductFilters {
-  search?: string;
-  category?: string;
-  isActive?: boolean;
-  minPrice?: number;
-  maxPrice?: number;
+export interface ProductsQueryParams {
   page?: number;
-  limit?: number;
-  sortBy?: "name" | "price" | "stock" | "createdAt";
-  sortOrder?: "asc" | "desc";
+  pageSize?: number;
+  filter?: string;
 }
 
-// Serviços de produtos
-export const productService = {
-  // Listar produtos com filtros
-  async getProducts(filters?: ProductFilters): Promise<ProductsResponse> {
-    const params = new URLSearchParams();
+export interface ApiSuccessResponse {
+  codeIntern: string;
+  message: string;
+  id?: string;
+}
 
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params.append(key, String(value));
-        }
-      });
+export interface ApiErrorResponse {
+  codeIntern: string;
+  message: string;
+}
+
+// Serviços de produtos conforme API especificada
+export const productService = {
+  // GET /products - Buscar lista de produtos
+  async getProducts(params?: ProductsQueryParams): Promise<ProductsResponse> {
+    const searchParams = new URLSearchParams();
+
+    if (params) {
+      if (params.page) searchParams.append("page", String(params.page));
+      if (params.pageSize)
+        searchParams.append("pageSize", String(params.pageSize));
+      if (params.filter) searchParams.append("filter", params.filter);
     }
 
-    const endpoint = `/products${params.toString() ? `?${params.toString()}` : ""}`;
+    const endpoint = `/products${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
-    return apiRequest(() => httpClient.get<ProductsResponse>(endpoint));
+    return httpClient.get<ProductsResponse>(endpoint);
   },
 
-  // Obter produto por ID
+  // GET /products/{id} - Buscar produto específico
   async getProduct(id: string): Promise<Product> {
-    return apiRequest(() => httpClient.get<Product>(`/products/${id}`));
+    return httpClient.get<Product>(`/products/${id}`);
   },
 
-  // Criar produto
-  async createProduct(data: CreateProductRequest): Promise<Product> {
-    return apiRequest(() => httpClient.post<Product>("/products", data));
-  },
-
-  // Atualizar produto
-  async updateProduct(
-    id: string,
-    data: Partial<CreateProductRequest>,
-  ): Promise<Product> {
-    return apiRequest(() => httpClient.put<Product>(`/products/${id}`, data));
-  },
-
-  // Deletar produto
-  async deleteProduct(id: string): Promise<void> {
-    return apiRequest(() => httpClient.delete<void>(`/products/${id}`));
-  },
-
-  // Upload de imagem do produto
-  async uploadProductImage(
-    productId: string,
-    file: File,
-  ): Promise<{ imageUrl: string }> {
+  // POST /products - Criar novo produto
+  async createProduct(data: CreateProductData): Promise<ApiSuccessResponse> {
     const formData = new FormData();
 
-    formData.append("image", file);
+    formData.append("title", data.title);
+    formData.append("description", data.description);
+    formData.append("thumbnail", data.thumbnail);
 
-    return apiRequest(() =>
-      httpClient.upload<{ imageUrl: string }>(
-        `/products/${productId}/image`,
-        formData,
-      ),
-    );
+    return httpClient.upload<ApiSuccessResponse>("/products", formData);
   },
 
-  // Obter estatísticas dos produtos
-  async getProductStats(): Promise<{
-    total: number;
-    inStock: number;
-    lowStock: number;
-    outOfStock: number;
-    categories: Array<{ name: string; count: number }>;
-  }> {
-    return apiRequest(() => httpClient.get("/products/stats"));
+  // PUT /products/{id} - Atualizar produto
+  async updateProduct(
+    id: string,
+    data: UpdateProductData,
+  ): Promise<ApiSuccessResponse> {
+    return httpClient.put<ApiSuccessResponse>(`/products/${id}`, data);
   },
 
-  // Buscar produtos por categoria
-  async getProductsByCategory(category: string): Promise<Product[]> {
-    return apiRequest(() =>
-      httpClient.get<Product[]>(
-        `/products/category/${encodeURIComponent(category)}`,
-      ),
-    );
+  // DELETE /products/{id} - Deletar produto
+  async deleteProduct(id: string): Promise<ApiSuccessResponse> {
+    return httpClient.delete<ApiSuccessResponse>(`/products/${id}`);
   },
 
-  // Buscar produtos em baixo estoque
-  async getLowStockProducts(threshold: number = 10): Promise<Product[]> {
-    return apiRequest(() =>
-      httpClient.get<Product[]>(`/products/low-stock?threshold=${threshold}`),
-    );
-  },
-
-  // Atualizar estoque do produto
-  async updateProductStock(id: string, quantity: number): Promise<Product> {
-    return apiRequest(() =>
-      httpClient.patch<Product>(`/products/${id}/stock`, { quantity }),
-    );
-  },
-
-  // Ativar/Desativar produto
-  async toggleProductStatus(id: string): Promise<Product> {
-    return apiRequest(() =>
-      httpClient.patch<Product>(`/products/${id}/toggle-status`),
-    );
+  // PATCH /products/thumbnail/{id} - Atualizar thumbnail do produto
+  async updateProductThumbnail(
+    id: string,
+    thumbnail: string,
+  ): Promise<ApiSuccessResponse> {
+    return httpClient.patch<ApiSuccessResponse>(`/products/thumbnail/${id}`, {
+      thumbnail,
+    });
   },
 };
 
@@ -159,11 +121,6 @@ export function useProducts() {
     createProduct: productService.createProduct,
     updateProduct: productService.updateProduct,
     deleteProduct: productService.deleteProduct,
-    uploadProductImage: productService.uploadProductImage,
-    getProductStats: productService.getProductStats,
-    getProductsByCategory: productService.getProductsByCategory,
-    getLowStockProducts: productService.getLowStockProducts,
-    updateProductStock: productService.updateProductStock,
-    toggleProductStatus: productService.toggleProductStatus,
+    updateProductThumbnail: productService.updateProductThumbnail,
   };
 }

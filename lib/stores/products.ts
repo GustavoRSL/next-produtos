@@ -2,6 +2,8 @@ import type {
   Product,
   CreateProductData,
   UpdateProductData,
+  ProductsQueryParams,
+  ApiSuccessResponse,
 } from "@/lib/services/products";
 
 import { create } from "zustand";
@@ -10,30 +12,57 @@ import { productService } from "@/lib/services/products";
 
 interface ProductState {
   products: Product[];
+  currentProduct: Product | null;
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
   isLoading: boolean;
   error: string | null;
 
   // Actions
-  fetchProducts: () => Promise<void>;
-  createProduct: (data: CreateProductData) => Promise<Product>;
-  updateProduct: (id: string, data: UpdateProductData) => Promise<Product>;
+  fetchProducts: (params?: ProductsQueryParams) => Promise<void>;
+  fetchProduct: (id: string) => Promise<void>;
+  createProduct: (data: CreateProductData) => Promise<ApiSuccessResponse>;
+  updateProduct: (
+    id: string,
+    data: UpdateProductData,
+  ) => Promise<ApiSuccessResponse>;
   deleteProduct: (id: string) => Promise<void>;
+  updateProductThumbnail: (
+    id: string,
+    thumbnail: string,
+  ) => Promise<ApiSuccessResponse>;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
+  clearCurrentProduct: () => void;
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
+  currentProduct: null,
+  pagination: {
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    totalPages: 0,
+  },
   isLoading: false,
   error: null,
 
-  fetchProducts: async () => {
+  fetchProducts: async (params?: ProductsQueryParams) => {
     try {
       set({ isLoading: true, error: null });
-      const products = await productService.getProducts();
+      const response = await productService.getProducts(params);
 
-      set({ products, isLoading: false });
+      set({
+        products: response.data,
+        pagination: response.meta,
+        isLoading: false,
+      });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Erro ao carregar produtos";
@@ -43,15 +72,32 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
+  fetchProduct: async (id: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      const product = await productService.getProduct(id);
+
+      set({ currentProduct: product, isLoading: false });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao carregar produto";
+
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
+  },
+
   createProduct: async (data: CreateProductData) => {
     try {
       set({ isLoading: true, error: null });
-      const newProduct = await productService.createProduct(data);
-      const { products } = get();
+      const response = await productService.createProduct(data);
 
-      set({ products: [...products, newProduct], isLoading: false });
+      // Recarregar lista de produtos após criar
+      await get().fetchProducts();
 
-      return newProduct;
+      set({ isLoading: false });
+
+      return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Erro ao criar produto";
@@ -64,15 +110,17 @@ export const useProductStore = create<ProductState>((set, get) => ({
   updateProduct: async (id: string, data: UpdateProductData) => {
     try {
       set({ isLoading: true, error: null });
-      const updatedProduct = await productService.updateProduct(id, data);
+      const response = await productService.updateProduct(id, data);
+
+      // Atualizar produto na lista se existir
       const { products } = get();
       const updatedProducts = products.map((product) =>
-        product.id === id ? updatedProduct : product,
+        product.id === id ? { ...product, ...data } : product,
       );
 
       set({ products: updatedProducts, isLoading: false });
 
-      return updatedProduct;
+      return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Erro ao atualizar produto";
@@ -99,6 +147,33 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
+  updateProductThumbnail: async (id: string, thumbnail: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await productService.updateProductThumbnail(
+        id,
+        thumbnail,
+      );
+
+      // Recarregar produto atual se for o mesmo ID
+      const { currentProduct } = get();
+
+      if (currentProduct && currentProduct.id === id) {
+        await get().fetchProduct(id);
+      }
+
+      set({ isLoading: false });
+
+      return response;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao atualizar thumbnail";
+
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
+  },
+
   setLoading: (loading: boolean) => {
     set({ isLoading: loading });
   },
@@ -109,5 +184,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  clearCurrentProduct: () => {
+    set({ currentProduct: null });
   },
 }));

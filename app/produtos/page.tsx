@@ -1,6 +1,9 @@
 "use client";
 
+import type { Product } from "@/lib/services/products";
+
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import {
   Card,
   CardBody,
@@ -19,87 +22,56 @@ import {
   ModalFooter,
   useDisclosure,
   Input,
-  Select,
-  SelectItem,
+  Switch,
+  Textarea,
 } from "@heroui/react";
 import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
   EyeIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
 
 import { DashboardLayout } from "@/components/layout";
 import { useProductStore } from "@/lib/stores/products";
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  stock: number;
-  category: string;
-  description?: string;
-  status: "active" | "inactive";
-  createdAt: string;
-}
-
-const categories = ["Eletrônicos", "Roupas", "Casa", "Esporte", "Livros"];
-
 export default function ProdutosPage() {
-  const { fetchProducts } = useProductStore();
+  const {
+    products,
+    isLoading,
+    error,
+    fetchProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    clearError,
+  } = useProductStore();
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [modalMode, setModalMode] = useState<"create" | "edit" | "view">(
     "create",
   );
-
-  // Mock data - substituir pela integração real
-  const mockProducts: Product[] = [
-    {
-      id: "1",
-      name: "iPhone 15 Pro",
-      price: 8999.99,
-      stock: 15,
-      category: "Eletrônicos",
-      description: "Smartphone Apple iPhone 15 Pro 256GB",
-      status: "active",
-      createdAt: "2024-01-15",
-    },
-    {
-      id: "2",
-      name: "Camiseta Básica",
-      price: 49.99,
-      stock: 150,
-      category: "Roupas",
-      description: "Camiseta 100% algodão",
-      status: "active",
-      createdAt: "2024-01-10",
-    },
-    {
-      id: "3",
-      name: "Notebook Dell",
-      price: 3499.99,
-      stock: 5,
-      category: "Eletrônicos",
-      description: "Notebook Dell Inspiron 15 3000",
-      status: "active",
-      createdAt: "2024-01-08",
-    },
-    {
-      id: "4",
-      name: "Mesa de Jantar",
-      price: 899.99,
-      stock: 0,
-      category: "Casa",
-      description: "Mesa de jantar 6 lugares",
-      status: "inactive",
-      createdAt: "2024-01-05",
-    },
-  ];
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    status: true,
+  });
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  // Limpar erro quando fechar modal
+  useEffect(() => {
+    if (!isOpen) {
+      clearError();
+    }
+  }, [isOpen, clearError]);
 
   const handleOpenModal = (
     mode: "create" | "edit" | "view",
@@ -107,25 +79,155 @@ export default function ProdutosPage() {
   ) => {
     setModalMode(mode);
     setSelectedProduct(product || null);
+
+    if (mode === "create") {
+      setFormData({
+        title: "",
+        description: "",
+        status: true,
+      });
+      setThumbnailFile(null);
+      setImagePreview(null);
+    } else if (product) {
+      setFormData({
+        title: product.title,
+        description: product.description,
+        status: product.status,
+      });
+    }
+
     onOpen();
   };
 
-  const getStockStatus = (stock: number) => {
-    if (stock === 0) return { color: "danger" as const, text: "Sem estoque" };
-    if (stock < 10) return { color: "warning" as const, text: "Baixo estoque" };
+  const handleCreateProduct = async () => {
+    try {
+      if (!thumbnailFile) {
+        alert("Por favor, selecione uma imagem para o produto");
 
-    return { color: "success" as const, text: "Em estoque" };
+        return;
+      }
+
+      await createProduct({
+        title: formData.title,
+        description: formData.description,
+        thumbnail: thumbnailFile,
+      });
+
+      onClose();
+      setFormData({ title: "", description: "", status: true });
+      setThumbnailFile(null);
+      setImagePreview(null);
+    } catch {
+      // Error handled by store
+    }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(price);
+  const handleUpdateProduct = async () => {
+    if (!selectedProduct) return;
+
+    try {
+      await updateProduct(selectedProduct.id, {
+        title: formData.title,
+        description: formData.description,
+        status: formData.status,
+      });
+
+      onClose();
+    } catch {
+      // Error handled by store
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (confirm("Tem certeza que deseja excluir este produto?")) {
+      try {
+        await deleteProduct(productId);
+      } catch {
+        // Error handled by store
+      }
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      setThumbnailFile(file);
+      createImagePreview(file);
+    }
+  };
+
+  const createImagePreview = (file: File) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(false);
+
+    const files = event.dataTransfer.files;
+
+    if (files.length > 0) {
+      const file = files[0];
+
+      if (file.type.startsWith("image/")) {
+        setThumbnailFile(file);
+        createImagePreview(file);
+      } else {
+        alert("Por favor, selecione apenas arquivos de imagem.");
+      }
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const removeSelectedFile = () => {
+    setThumbnailFile(null);
+    setImagePreview(null);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("pt-BR");
+  };
+
+  const formatFileSize = (bytes: number) => {
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+
+    if (bytes === 0) return "0 Bytes";
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
   };
 
   return (
     <DashboardLayout title="Produtos">
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
+
       {/* Header Actions */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -133,7 +235,7 @@ export default function ProdutosPage() {
             Gerenciar Produtos
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {mockProducts.length} produtos cadastrados
+            {products.length} produtos cadastrados
           </p>
         </div>
         <Button
@@ -146,12 +248,12 @@ export default function ProdutosPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <Card>
           <CardBody className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-600">
-                {mockProducts.length}
+                {products.length}
               </p>
               <p className="text-sm text-gray-600">Total de Produtos</p>
             </div>
@@ -161,7 +263,7 @@ export default function ProdutosPage() {
           <CardBody className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">
-                {mockProducts.filter((p) => p.status === "active").length}
+                {products.filter((p: Product) => p.status === true).length}
               </p>
               <p className="text-sm text-gray-600">Produtos Ativos</p>
             </div>
@@ -171,19 +273,9 @@ export default function ProdutosPage() {
           <CardBody className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-red-600">
-                {mockProducts.filter((p) => p.stock === 0).length}
+                {products.filter((p: Product) => p.status === false).length}
               </p>
-              <p className="text-sm text-gray-600">Sem Estoque</p>
-            </div>
-          </CardBody>
-        </Card>
-        <Card>
-          <CardBody className="p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-orange-600">
-                {mockProducts.filter((p) => p.stock < 10 && p.stock > 0).length}
-              </p>
-              <p className="text-sm text-gray-600">Baixo Estoque</p>
+              <p className="text-sm text-gray-600">Produtos Inativos</p>
             </div>
           </CardBody>
         </Card>
@@ -195,75 +287,90 @@ export default function ProdutosPage() {
           <Table aria-label="Tabela de produtos">
             <TableHeader>
               <TableColumn>PRODUTO</TableColumn>
-              <TableColumn>CATEGORIA</TableColumn>
-              <TableColumn>PREÇO</TableColumn>
-              <TableColumn>ESTOQUE</TableColumn>
+              <TableColumn>THUMBNAIL</TableColumn>
               <TableColumn>STATUS</TableColumn>
+              <TableColumn>CRIADO EM</TableColumn>
               <TableColumn>AÇÕES</TableColumn>
             </TableHeader>
-            <TableBody>
-              {mockProducts.map((product) => {
-                const stockStatus = getStockStatus(product.stock);
-
-                return (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-sm text-gray-500">
-                          {product.description}
+            <TableBody emptyContent="Nenhum produto encontrado">
+              {products.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell>
+                    <div>
+                      <p className="font-medium">{product.title}</p>
+                      <p className="text-sm text-gray-500 max-w-xs truncate">
+                        {product.description}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                        {product.thumbnail?.url ? (
+                          <Image
+                            alt={product.thumbnail.originalName}
+                            className="w-full h-full object-cover"
+                            height={48}
+                            src={product.thumbnail.url}
+                            width={48}
+                          />
+                        ) : (
+                          <PhotoIcon className="w-6 h-6 text-gray-400" />
+                        )}
+                      </div>
+                      <div className="text-sm">
+                        <p className="text-gray-600">
+                          {product.thumbnail?.originalName || "Sem imagem"}
+                        </p>
+                        <p className="text-gray-400">
+                          {product.thumbnail?.size
+                            ? formatFileSize(product.thumbnail.size)
+                            : ""}
                         </p>
                       </div>
-                    </TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>{formatPrice(product.price)}</TableCell>
-                    <TableCell>
-                      <Chip color={stockStatus.color} size="sm" variant="flat">
-                        {product.stock} unidades
-                      </Chip>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        color={
-                          product.status === "active" ? "success" : "danger"
-                        }
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      color={product.status ? "success" : "danger"}
+                      size="sm"
+                      variant="flat"
+                    >
+                      {product.status ? "Ativo" : "Inativo"}
+                    </Chip>
+                  </TableCell>
+                  <TableCell>{formatDate(product.createdAt)}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        isIconOnly
                         size="sm"
-                        variant="flat"
+                        variant="light"
+                        onPress={() => handleOpenModal("view", product)}
                       >
-                        {product.status === "active" ? "Ativo" : "Inativo"}
-                      </Chip>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          isIconOnly
-                          size="sm"
-                          variant="light"
-                          onPress={() => handleOpenModal("view", product)}
-                        >
-                          <EyeIcon className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          isIconOnly
-                          size="sm"
-                          variant="light"
-                          onPress={() => handleOpenModal("edit", product)}
-                        >
-                          <PencilIcon className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          isIconOnly
-                          color="danger"
-                          size="sm"
-                          variant="light"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                        <EyeIcon className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        onPress={() => handleOpenModal("edit", product)}
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        isIconOnly
+                        color="danger"
+                        size="sm"
+                        variant="light"
+                        onPress={() => handleDeleteProduct(product.id)}
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardBody>
@@ -281,56 +388,151 @@ export default function ProdutosPage() {
             <div className="space-y-4">
               <Input
                 isReadOnly={modalMode === "view"}
-                label="Nome do Produto"
-                placeholder="Digite o nome do produto"
-                value={selectedProduct?.name || ""}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  isReadOnly={modalMode === "view"}
-                  label="Preço"
-                  placeholder="0,00"
-                  startContent="R$"
-                  type="number"
-                  value={selectedProduct?.price?.toString() || ""}
-                />
-                <Input
-                  isReadOnly={modalMode === "view"}
-                  label="Estoque"
-                  placeholder="0"
-                  type="number"
-                  value={selectedProduct?.stock?.toString() || ""}
-                />
-              </div>
-              <Select
-                isDisabled={modalMode === "view"}
-                label="Categoria"
-                placeholder="Selecione uma categoria"
-                selectedKeys={
-                  selectedProduct?.category ? [selectedProduct.category] : []
+                label="Título"
+                placeholder="Digite o título do produto"
+                value={
+                  modalMode === "view"
+                    ? selectedProduct?.title || ""
+                    : formData.title
                 }
-              >
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </Select>
-              <Input
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+              />
+              <Textarea
                 isReadOnly={modalMode === "view"}
                 label="Descrição"
-                placeholder="Descrição do produto"
-                value={selectedProduct?.description || ""}
+                minRows={3}
+                placeholder="Digite a descrição do produto"
+                value={
+                  modalMode === "view"
+                    ? selectedProduct?.description || ""
+                    : formData.description
+                }
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
               />
+              {modalMode === "edit" && (
+                <Switch
+                  isSelected={formData.status}
+                  onValueChange={(isSelected) =>
+                    setFormData({ ...formData, status: isSelected })
+                  }
+                >
+                  Produto Ativo
+                </Switch>
+              )}
+              {modalMode === "view" && (
+                <div className="space-y-2">
+                  <p>
+                    <strong>Status:</strong>{" "}
+                    {selectedProduct?.status ? "Ativo" : "Inativo"}
+                  </p>
+                  <p>
+                    <strong>Criado em:</strong>{" "}
+                    {selectedProduct
+                      ? formatDate(selectedProduct.createdAt)
+                      : ""}
+                  </p>
+                  <p>
+                    <strong>Atualizado em:</strong>{" "}
+                    {selectedProduct
+                      ? formatDate(selectedProduct.updatedAt)
+                      : ""}
+                  </p>
+                  {selectedProduct?.thumbnail && (
+                    <div>
+                      <strong>Thumbnail:</strong>
+                      <p className="text-sm text-gray-600">
+                        {selectedProduct.thumbnail.originalName} (
+                        {formatFileSize(selectedProduct.thumbnail.size || 0)})
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {modalMode === "create" && (
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    isDragOver
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-300"
+                  }`}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                >
+                  {imagePreview ? (
+                    <div className="space-y-4">
+                      <div className="relative inline-block">
+                        <Image
+                          alt="Preview"
+                          className="max-w-48 max-h-48 object-cover rounded-lg"
+                          height={192}
+                          src={imagePreview}
+                          width={192}
+                        />
+                        <button
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                          type="button"
+                          onClick={removeSelectedFile}
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {thumbnailFile?.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Clique no X para remover ou arraste uma nova imagem
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                      <p className="mt-2 text-sm text-gray-600">
+                        Clique para adicionar uma imagem ou arraste aqui
+                      </p>
+                      <input
+                        accept="image/*"
+                        className="hidden"
+                        id="thumbnail-upload"
+                        type="file"
+                        onChange={handleFileChange}
+                      />
+                      <label
+                        className="cursor-pointer inline-block mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        htmlFor="thumbnail-upload"
+                      >
+                        Selecionar Arquivo
+                      </label>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={onClose}>
               {modalMode === "view" ? "Fechar" : "Cancelar"}
             </Button>
-            {modalMode !== "view" && (
-              <Button color="primary" onPress={onClose}>
-                {modalMode === "create" ? "Criar" : "Salvar"}
+            {modalMode === "create" && (
+              <Button
+                color="primary"
+                isLoading={isLoading}
+                onPress={handleCreateProduct}
+              >
+                Criar
+              </Button>
+            )}
+            {modalMode === "edit" && (
+              <Button
+                color="primary"
+                isLoading={isLoading}
+                onPress={handleUpdateProduct}
+              >
+                Salvar
               </Button>
             )}
           </ModalFooter>
