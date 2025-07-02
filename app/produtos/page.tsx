@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { DashboardLayout } from "@/components/layout";
 import ProductFormModal from "@/components/produtos/ProductFormModal";
+import DeleteConfirmationModal from "@/components/produtos/DeleteConfirmationModal";
 import ProductsTable from "@/components/produtos/ProductsTable";
 import StatCard from "@/components/ui/StatCard";
 import SearchFilter from "@/components/ui/SearchFilter";
@@ -30,7 +31,13 @@ export default function ProdutosPage() {
   } = useProductStore();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const deleteModal = useDisclosure();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit" | "view">(
     "create",
   );
@@ -200,46 +207,56 @@ export default function ProdutosPage() {
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    // Usando toast com ação de confirmação ao invés do confirm nativo
-    toast.warning("Tem certeza que deseja excluir este produto?", {
-      action: {
-        label: "Excluir",
-        onClick: async () => {
-          try {
-            await deleteProduct(productId);
-            toast.success("Produto excluído com sucesso");
+  // Função para abrir a modal de confirmação de exclusão
+  const handleDeleteProduct = (productId: string) => {
+    // Encontra o produto pelo ID para obter o nome
+    const product = products.find((p) => p.id === productId);
 
-            // Recarregar produtos na página atual (ou anterior se a página atual ficar vazia)
-            let page = currentPage;
+    if (product) {
+      setProductToDelete({
+        id: productId,
+        name: product.title,
+      });
+      deleteModal.onOpen();
+    }
+  };
 
-            // Se excluiu o último item da página atual, voltar para a página anterior (exceto se já estiver na primeira página)
-            if (products.length === 1 && currentPage > 1) {
-              page = currentPage - 1;
-              setCurrentPage(page);
-            }
+  // Função para confirmar a exclusão do produto
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
 
-            const params: any = {
-              page,
-              pageSize: 10,
-            };
+    setIsDeleting(true);
 
-            if (searchTerm) {
-              params.filter = searchTerm;
-            }
+    try {
+      await deleteProduct(productToDelete.id);
+      toast.success("Produto excluído com sucesso");
 
-            await fetchProducts(params);
-          } catch {
-            toast.error("Erro ao excluir o produto");
-          }
-        },
-      },
-      cancel: {
-        label: "Cancelar",
-        onClick: () => {},
-      },
-      duration: 5000, // Dar tempo suficiente para o usuário decidir
-    });
+      // Recarregar produtos na página atual (ou anterior se a página atual ficar vazia)
+      let page = currentPage;
+
+      // Se excluiu o último item da página atual, voltar para a página anterior (exceto se já estiver na primeira página)
+      if (products.length === 1 && currentPage > 1) {
+        page = currentPage - 1;
+        setCurrentPage(page);
+      }
+
+      const params: any = {
+        page,
+        pageSize: 10,
+      };
+
+      if (searchTerm) {
+        params.filter = searchTerm;
+      }
+
+      await fetchProducts(params);
+    } catch {
+      toast.error("Erro ao excluir o produto");
+    } finally {
+      setIsDeleting(false);
+      deleteModal.onClose();
+      setProductToDelete(null);
+    }
   };
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB em bytes
@@ -453,7 +470,7 @@ export default function ProdutosPage() {
         onPageChange={setCurrentPage}
       />
 
-      {/* Modal */}
+      {/* Product Form Modal */}
       <ProductFormModal
         formData={formData}
         handleCreateProduct={handleCreateProduct}
@@ -473,6 +490,15 @@ export default function ProdutosPage() {
         setFormData={setFormData}
         thumbnailFile={thumbnailFile}
         onClose={onClose}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isLoading={isDeleting}
+        isOpen={deleteModal.isOpen}
+        productName={productToDelete?.name}
+        onClose={deleteModal.onClose}
+        onConfirm={confirmDeleteProduct}
       />
     </DashboardLayout>
   );
