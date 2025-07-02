@@ -1,76 +1,166 @@
-# Produtos Manager
+# Next CRUD Produtos
 
-Sistema de gerenciamento de produtos com dashboard de métricas desenvolvido com Next.js e as melhores práticas de desenvolvimento modernas.
+Sistema completo de gerenciamento de produtos (CRUD) desenvolvido com Next.js 15.
+
+![Dashboard e CRUD de Produtos](public/grid.svg)
 
 ## 🚀 Stack Tecnológica
 
-- **Next.js** - Framework React com SSR (Server Side Rendering) e API Routes
-- **React.js** - Biblioteca para construção de interfaces
-- **Zustand** - Gerenciamento de estado global (será implementado)
-- **Tailwind CSS** - Estilização com responsividade e suporte a dark mode
-- **Zod** - Validação de formulários (será implementado)
-- **Hero UI** - Biblioteca base de componentes
-- **Charts.js** - Visualização de dados em gráficos (será implementado)
+- **Next.js 15** - Framework React com App Router, Server Components e API Routes
+- **React 18** - Biblioteca de construção de interfaces com Hooks e Context API
+- **TypeScript** - Tipagem estática para desenvolvimento escalável
+- **Zustand** - Gerenciamento de estado global leve e poderoso
+- **Tailwind CSS** - Estilização avançada com responsividade e suporte nativo a dark mode
+- **Hero UI** - Biblioteca de componentes modernos e acessíveis
+- **Zod** - Validação de dados e tipagem em runtime
+- **Chart.js** - Visualização de dados em gráficos interativos
+- **Sonner** - Toast notifications elegantes e acessíveis
 
-## 🎯 Funcionalidades
+## 💻 Funcionalidades Principais
 
-### ✅ Implementado
+### Gerenciamento de Produtos (Página Principal)
 
-- [x] Estrutura base limpa do projeto
-- [x] Layout responsivo com dark mode
-- [x] Navegação entre páginas
-- [x] Dashboard inicial com cards de métricas
+- **Listagem de Produtos**: Tabela completa com paginação, filtros e busca
+- **Dashboard de Métricas**: Cards informativos e gráficos de análise
+- **CRUD Completo**:
+  - Criação de produtos com upload de imagens (drag-and-drop e validação)
+  - Visualização detalhada em modal
+  - Edição de todos os campos, incluindo status e imagem
+  - Exclusão com modal de confirmação
+- **Experiência de Usuário Avançada**:
+  - Design responsivo (mobile, tablet e desktop)
+  - Suporte a dark/light mode
+  - Animações e transições suaves
+  - Toast notifications para feedback de ações
+  - Drag-and-drop para upload de imagens
+  - Validação de entrada de dados (incluindo limite de tamanho de arquivos 5MB)
 
-### 🔄 Em Desenvolvimento
+### Arquitetura e Padrões Avançados
 
-- [ ] CRUD de produtos (criar, listar, editar, excluir)
-- [ ] API Routes para gerenciamento de dados
-- [ ] Gráficos de métricas no dashboard
-- [ ] Validação de formulários com Zod
-- [ ] Gerenciamento de estado com Zustand
-- [ ] Otimizações de SEO e acessibilidade
+- **Componentização Extensiva**: Código modular e reutilizável
+- **Gerenciamento de Estado**: Stores com Zustand para dados globais
+- **Tipagem Robusta**: TypeScript em toda a aplicação
+- **Pattern de Services**: Abstração de chamadas API
+- **Acessibilidade**: Componentes e interações acessíveis (WCAG)
+- **SEO Otimizado**: Meta tags e estrutura semântica
 
-## 🛠️ Scripts Disponíveis
+## � Como Executar o Projeto
+
+### Requisitos
+
+- Node.js 18.x ou superior
+- NPM 9.x ou superior
+
+### Instalação
 
 ```bash
-# Iniciar servidor de desenvolvimento
-npm run dev
+# Clone o repositório
+git clone https://github.com/GustavoRSL/next-produtos.git
 
-# Build de produção
-npm run build
+# Acesse a pasta do projeto
+cd next-crud-produtos
 
-# Iniciar servidor de produção
-npm start
-
-# Executar linter
-npm run lint
+# Instale as dependências
+npm install
 ```
 
-## 🎨 Padrões de Desenvolvimento
+### Executando o Projeto
 
-Este projeto segue as melhores práticas de desenvolvimento:
+```bash
+# Desenvolvimento com hot-reload (usando Turbopack)
+npm run dev
 
-- ✅ Arquitetura limpa e bem estruturada
-- ✅ Código legível e de fácil manutenção
-- ✅ Alta performance e segurança
-- ✅ SEO otimizado
-- ✅ Acessibilidade (a11y)
-- ✅ Padrões de desenvolvedor sênior
-- ✅ Soluções simples e efetivas
+# ou sem Turbopack
+npm run dev:no-turbo
 
-## 🚀 Como Executar
+# Gerar build de produção
+npm run build
 
-1. Clone o repositório
-2. Instale as dependências: `npm install`
-3. Execute o servidor de desenvolvimento: `npm run dev`
-4. Acesse http://localhost:3000
+# Iniciar em modo produção
+npm start
+```
 
-## 📝 Próximos Passos
+Após iniciar o servidor de desenvolvimento, acesse [http://localhost:3000](http://localhost:3000)
 
-1. Instalar dependências adicionais (Zustand, Zod, Charts.js)
-2. Implementar estrutura de dados para produtos
-3. Criar API Routes para CRUD
-4. Desenvolver páginas de listagem e formulários
-5. Implementar dashboard com gráficos
-6. Adicionar validações e tratamento de erros
-7. Otimizar performance e SEO
+### Scripts Disponíveis
+
+| Comando          | Descrição                                           |
+|------------------|-----------------------------------------------------|
+| `npm run dev`    | Inicia servidor de desenvolvimento com Turbopack    |
+| `npm run build`  | Gera build otimizado para produção                  |
+| `npm start`      | Inicia aplicação em modo produção                   |
+| `npm run lint`   | Executa linting e correção automática de código     |
+
+## 📁 Estrutura do Projeto
+
+```
+.
+├── app/                  # App Router (Next.js 15)
+│   ├── auth/             # Autenticação (mockada)
+│   ├── dashboard/        # Dashboard com gráficos
+│   ├── produtos/         # Principal: CRUD de produtos
+│   ├── api/              # Rotas de API
+│   └── layout.tsx        # Layout principal com providers
+├── components/           # Componentes reutilizáveis
+│   ├── charts/           # Gráficos com Chart.js
+│   ├── layout/           # Componentes de layout
+│   ├── produtos/         # Componentes específicos de produtos
+│   └── ui/               # Componentes de UI genéricos
+├── lib/
+│   ├── services/         # Serviços para comunicação com API
+│   ├── stores/           # Gerenciamento de estado global (Zustand)
+│   ├── utils/            # Funções utilitárias
+│   └── validations/      # Esquemas de validação com Zod
+├── public/               # Ativos estáticos
+├── styles/               # Estilos globais
+└── types/                # Tipagens TypeScript
+```
+
+## � Destaque: CRUD de Produtos (/app/produtos)
+
+O gerenciador de produtos é a funcionalidade principal deste projeto, implementando:
+
+1. **Interface Responsiva**: Layout adaptável para todos os dispositivos
+2. **Filtros e Busca**: Sistema de filtragem com debounce e feedback instantâneo
+3. **Upload de Imagens**: Suporte para drag-and-drop e validações
+4. **Componentes Avançados**:
+   - `ProductFormModal`: Formulário modal para criação/edição
+   - `DeleteConfirmationModal`: Confirmação visual para exclusão
+   - `ProductsTable`: Tabela de produtos com acesso às operações
+   - `StatCard`: Cards de estatísticas
+   - `SearchFilter`: Filtro de busca com otimizações
+   - `Pagination`: Paginação de resultados
+
+5. **Toast Notifications**: Feedback visual de ações com `sonner`
+6. **Validação de Uploads**: Implementa verificação de tipo e limite de tamanho (5MB)
+
+## ⚙️ Funcionalidades Técnicas
+
+- **Componentes Server/Client**: Separação correta para otimização
+- **Funções Específicas**: Cada componente tem responsabilidade única
+- **Estados Globais**: Gerenciamento centralizado com Zustand
+- **Tratamento de Erros**: Feedback visual para o usuário
+- **Otimizações de Performance**:
+  - Debounce em buscas
+  - Carregamento otimizado de imagens
+  - Estados locais vs globais
+  - Paginação eficiente
+
+## 📱 Responsividade
+
+O projeto é 100% responsivo, adaptando-se a diferentes tamanhos de tela:
+
+- **Mobile**: Layout vertical, navegação compacta
+- **Tablet**: Aproveitamento de espaço intermediário
+- **Desktop**: Experiência completa com todas as funcionalidades
+
+## 🌙 Dark Mode
+
+Implementação completa de Dark/Light Mode usando:
+- `next-themes` para persistência de preferência
+- Design system adaptável (variáveis CSS e Tailwind)
+- Transições suaves entre modos
+
+## 👨‍💻 Desenvolvido por
+
+[Gustavo Reis Souza Lima] - [GustavoRSL]
