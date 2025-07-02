@@ -154,6 +154,17 @@ O projeto é 100% responsivo, adaptando-se a diferentes tamanhos de tela:
 - **Tablet**: Aproveitamento de espaço intermediário
 - **Desktop**: Experiência completa com todas as funcionalidades
 
+## 🛑 Tratamento de Erros
+
+### Página 404 Personalizada
+
+A aplicação conta com uma página 404 personalizada que oferece uma experiência amigável para o usuário:
+
+- **Redirecionamento Inteligente**: Baseado no estado de autenticação, redireciona para Dashboard (autenticado) ou Login (não autenticado)
+- **Contagem Regressiva**: Redireciona automaticamente após 5 segundos
+- **Navegação Facilitada**: Botão para retorno direto à área adequada
+- **Responsiva**: Design adaptado a todos os dispositivos
+
 ## 🌙 Dark Mode
 
 Implementação completa de Dark/Light Mode usando:
