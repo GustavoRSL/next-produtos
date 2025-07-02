@@ -161,6 +161,34 @@ Implementação completa de Dark/Light Mode usando:
 - Design system adaptável (variáveis CSS e Tailwind)
 - Transições suaves entre modos
 
+## ⚙️ Configuração de Ambiente (.env)
+
+O projeto utiliza variáveis de ambiente para configuração flexível. Crie um arquivo `.env.local` na raiz do projeto com as seguintes configurações:
+
+```bash
+# API Configuration
+NEXT_PUBLIC_API_URL=https://api.example.com
+
+# Development
+NODE_ENV=development
+```
+
+### Variáveis de Ambiente Disponíveis
+
+| Variável | Descrição | Padrão |
+|----------|-----------|--------|
+| `NEXT_PUBLIC_API_URL` | URL base da API externa | `https://api.example.com` |
+| `NODE_ENV` | Ambiente de execução | `development` |
+
+### Ambientes
+
+O projeto está configurado para diferentes ambientes:
+- **Desenvolvimento**: Variáveis de `.env.local` têm precedência
+- **Produção**: Defina as variáveis no seu ambiente de hospedagem
+- **Teste**: Configure `.env.test` para testes automatizados
+
+> **Nota**: Os arquivos `.env*.local` são ignorados pelo Git para proteção de credenciais.
+
 ## 👨‍💻 Desenvolvido por
 
 [Gustavo Reis Souza Lima] - [GustavoRSL]
