@@ -5,6 +5,7 @@ import type { Product } from "@/lib/services/products";
 import { useEffect, useState } from "react";
 import { Button, useDisclosure } from "@heroui/react";
 import { PlusIcon, CubeIcon } from "@heroicons/react/24/outline";
+import { toast } from "sonner";
 
 import { DashboardLayout } from "@/components/layout";
 import ProductFormModal from "@/components/produtos/ProductFormModal";
@@ -128,7 +129,7 @@ export default function ProdutosPage() {
   const handleCreateProduct = async () => {
     try {
       if (!thumbnailFile) {
-        alert("Por favor, selecione uma imagem para o produto");
+        toast.error("Por favor, selecione uma imagem para o produto");
 
         return;
       }
@@ -137,6 +138,10 @@ export default function ProdutosPage() {
         title: formData.title,
         description: formData.description,
         thumbnail: thumbnailFile,
+      });
+
+      toast.success("Produto criado com sucesso!", {
+        description: `"${formData.title}" foi adicionado à lista de produtos.`,
       });
 
       onClose();
@@ -159,7 +164,7 @@ export default function ProdutosPage() {
 
       await fetchProducts(params);
     } catch {
-      // Error handled by store
+      toast.error("Ocorreu um erro ao criar o produto. Tente novamente.");
     }
   };
 
@@ -171,6 +176,10 @@ export default function ProdutosPage() {
         title: formData.title,
         description: formData.description,
         status: formData.status,
+      });
+
+      toast.success("Produto atualizado com sucesso!", {
+        description: `As alterações em "${formData.title}" foram salvas.`,
       });
 
       // Recarregar produtos na página atual
@@ -187,46 +196,81 @@ export default function ProdutosPage() {
 
       onClose();
     } catch {
-      // Error handled by store
+      toast.error("Ocorreu um erro ao atualizar o produto. Tente novamente.");
     }
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    if (confirm("Tem certeza que deseja excluir este produto?")) {
-      try {
-        await deleteProduct(productId);
+    // Usando toast com ação de confirmação ao invés do confirm nativo
+    toast.warning("Tem certeza que deseja excluir este produto?", {
+      action: {
+        label: "Excluir",
+        onClick: async () => {
+          try {
+            await deleteProduct(productId);
+            toast.success("Produto excluído com sucesso");
 
-        // Recarregar produtos na página atual (ou anterior se a página atual ficar vazia)
-        let page = currentPage;
+            // Recarregar produtos na página atual (ou anterior se a página atual ficar vazia)
+            let page = currentPage;
 
-        // Se excluiu o último item da página atual, voltar para a página anterior (exceto se já estiver na primeira página)
-        if (products.length === 1 && currentPage > 1) {
-          page = currentPage - 1;
-          setCurrentPage(page);
-        }
+            // Se excluiu o último item da página atual, voltar para a página anterior (exceto se já estiver na primeira página)
+            if (products.length === 1 && currentPage > 1) {
+              page = currentPage - 1;
+              setCurrentPage(page);
+            }
 
-        const params: any = {
-          page,
-          pageSize: 10,
-        };
+            const params: any = {
+              page,
+              pageSize: 10,
+            };
 
-        if (searchTerm) {
-          params.filter = searchTerm;
-        }
+            if (searchTerm) {
+              params.filter = searchTerm;
+            }
 
-        await fetchProducts(params);
-      } catch {
-        // Error handled by store
-      }
+            await fetchProducts(params);
+          } catch {
+            toast.error("Erro ao excluir o produto");
+          }
+        },
+      },
+      cancel: {
+        label: "Cancelar",
+        onClick: () => {},
+      },
+      duration: 5000, // Dar tempo suficiente para o usuário decidir
+    });
+  };
+
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB em bytes
+
+  const validateFileSize = (file: File): boolean => {
+    if (file.size > MAX_FILE_SIZE) {
+      // Formatar o tamanho do arquivo para exibição amigável
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+      toast.error(
+        `Arquivo muito grande: ${fileSizeMB}MB. O tamanho máximo permitido é 5MB.`,
+        {
+          duration: 4000,
+        },
+      );
+
+      return false;
     }
+
+    return true;
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
     if (file) {
-      setThumbnailFile(file);
-      createImagePreview(file);
+      if (validateFileSize(file)) {
+        setThumbnailFile(file);
+        createImagePreview(file);
+        toast.success(`Imagem "${file.name}" selecionada com sucesso`);
+      }
     }
   };
 
@@ -249,11 +293,21 @@ export default function ProdutosPage() {
       const file = files[0];
 
       if (file.type.startsWith("image/")) {
-        setThumbnailFile(file);
-        createImagePreview(file);
+        if (validateFileSize(file)) {
+          setThumbnailFile(file);
+          createImagePreview(file);
+          toast.success(`Imagem "${file.name}" adicionada com sucesso`);
+        }
       } else {
-        alert("Por favor, selecione apenas arquivos de imagem.");
+        toast.error(
+          "Formato inválido. Por favor, selecione apenas arquivos de imagem.",
+          {
+            description: "Formatos aceitos: JPG, PNG, GIF, etc.",
+          },
+        );
       }
+    } else {
+      toast.warning("Nenhum arquivo foi detectado.");
     }
   };
 
@@ -278,6 +332,10 @@ export default function ProdutosPage() {
     try {
       await updateProductThumbnail(selectedProduct.id, thumbnailFile);
 
+      toast.success("Imagem do produto atualizada com sucesso!", {
+        description: `Nova imagem adicionada para "${selectedProduct.title}".`,
+      });
+
       // Recarregar produtos na página atual
       const params: any = {
         page: currentPage,
@@ -294,7 +352,7 @@ export default function ProdutosPage() {
       setThumbnailFile(null);
       setImagePreview(null);
     } catch {
-      // Error handled by store
+      toast.error("Erro ao atualizar a imagem do produto. Tente novamente.");
     }
   };
 
